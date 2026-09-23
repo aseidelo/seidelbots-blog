@@ -1,0 +1,48 @@
+---
+// A real drawing in the frame a Slot used to hold. Same card treatment as
+// Slot's "illustration" kind, so replacing one with the other is invisible
+// to the surrounding layout.
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+  src: ImageMetadata;
+  /** Describe the drawing for someone who can't see it. */
+  alt: string;
+  height?: string;
+  /** object-position, for when the subject isn't centred in the source. */
+  position?: string;
+  /** Set for anything above the fold — lazy loading delays the LCP there. */
+  eager?: boolean;
+}
+
+const { src, alt, height = "200px", position = "center", eager = false } = Astro.props;
+---
+<figure class="illustration" style={{ height }}>
+  <Image
+    src={src}
+    alt={alt}
+    widths={[400, 800]}
+    sizes="(max-width: 640px) 100vw, 400px"
+    style={`object-position: ${position}`}
+    loading={eager ? "eager" : "lazy"}
+    fetchpriority={eager ? "high" : "auto"}
+  />
+</figure>
+
+<style>
+  .illustration {
+    margin: 0;
+    overflow: hidden;
+    border: var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    background: var(--surface);
+  }
+  .illustration :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>
