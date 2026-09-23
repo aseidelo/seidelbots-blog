@@ -1,10 +1,15 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Slot from "../components/Slot.astro";
+import Illustration from "../components/Illustration.astro";
+import workshopBot from "../assets/workshop-bot.jpeg";
 ---
 <BaseLayout title="Out of stock">
   <div class="column wrap">
-    <Slot spec="bot shrugging at an empty shelf" height="180px" />
+    <Illustration
+      src={workshopBot}
+      alt="A retro robot holding a circuit board, standing in a workshop lined with spare parts."
+      height="180px"
+    />
     <div>
       <p class="eyebrow">404 · out of stock</p>
       <h1>That part isn't on the shelf.</h1>

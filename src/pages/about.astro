@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Slot from "../components/Slot.astro";
+import Illustration from "../components/Illustration.astro";
+import selfPortrait from "../assets/self-portrait.jpeg";
 import { NOW, SOCIAL } from "../config";
 ---
 <BaseLayout title="About" active="about">
@@ -45,7 +46,11 @@ import { NOW, SOCIAL } from "../config";
     </div>
 
     <aside class="side">
-      <Slot spec="self-portrait as shopkeep, counter and shelves behind" height="200px" />
+      <Illustration
+        src={selfPortrait}
+        alt="Cartoon portrait of Seidel, bearded and wearing a utility vest with a wrench in the pocket."
+        height="200px"
+      />
       <div class="card">
         <p class="eyebrow">Find me</p>
         <div class="links">

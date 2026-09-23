@@ -4,7 +4,8 @@ import type { CollectionEntry } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PostCard from "../components/PostCard.astro";
 import ProjectCard from "../components/ProjectCard.astro";
-import Slot from "../components/Slot.astro";
+import Illustration from "../components/Illustration.astro";
+import shopExterior from "../assets/shop-exterior.jpeg";
 import { SITE } from "../config";
 import { PROJECTS, type Project } from "../data/projects";
 
@@ -36,7 +37,12 @@ const stream: StreamItem[] = [
           <span class="pill">{liveProjects} live project{liveProjects === 1 ? "" : "s"}</span>
         </div>
       </div>
-      <Slot spec="shopkeep bot handing over a part" height="150px" />
+      <Illustration
+        src={shopExterior}
+        alt="The Seidelbots shop on a desert planet, where a shopkeep bot hands a glowing part to a smaller robot."
+        height="150px"
+        eager
+      />
     </div>
   </section>
 
