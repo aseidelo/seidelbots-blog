@@ -1,13 +1,11 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PostList from "../../components/PostList.astro";
 import TagPills from "../../components/TagPills.astro";
 import { tagCounts } from "../../lib/tags";
+import { getListedPosts } from "../../lib/posts";
 
-const allPosts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
+const allPosts = await getListedPosts();
 const tags = tagCounts(allPosts);
 ---
 <BaseLayout title="Writing" active="writing">
@@ -15,8 +13,9 @@ const tags = tagCounts(allPosts);
     <div class="column">
       <h1>Writing</h1>
       <p>
-        {allPosts.length} post{allPosts.length === 1 ? "" : "s"} on building agents that survive
-        contact with real users. Markdown in, nothing fancy.
+        Everything I figure out ends up here — agentic AI, NLP, voice processing, and the occasional detour. {allPosts.length} post{allPosts.length === 1 ? "" : "s"} and counting.
+        <br>
+        Some posts are in both English and Portuguese — there's a toggle at the top of each one.
       </p>
       <TagPills tags={tags} total={allPosts.length} />
     </div>

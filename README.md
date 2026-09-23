@@ -22,7 +22,7 @@ Markdown vira post, deploy é estático (S3 + CloudFront).
 
 ## Escrever um post
 
-Criar `src/content/posts/nome-do-post.md`:
+A pasta é o idioma. Criar `src/content/posts/en/nome-do-post.md` (ou `pt/`):
 
 ```md
 ---
@@ -35,6 +35,21 @@ tags: [agents]
 
 Corpo em markdown.
 ```
+
+### Traduzir
+
+Dois arquivos com o **mesmo nome** em `en/` e `pt/` são o mesmo post em dois
+idiomas. Eles compartilham uma única URL (`/writing/nome-do-post/`), que traz as
+duas versões, e um toggle EN/PT escolhe qual aparece — a escolha do leitor fica
+no `localStorage` e vale para os próximos posts.
+
+Post que existe em um idioma só funciona normalmente: o botão do idioma que
+falta aparece desabilitado. Nas listagens, no RSS e nas tags o post aparece uma
+vez só, em inglês quando existe, senão no idioma em que foi escrito.
+
+Título, `dek`, `tags` e data são por arquivo, então cada idioma tem os seus. O
+`<title>` e a meta description da aba ficam sempre no idioma primário, já que
+são únicos por URL.
 ## Fluxo de trabalho
 
 Para atualizar o blog, criar branch `feat/<nome>` e publicá-la no remoto. O

@@ -1,82 +1,196 @@
 ---
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { PROJECTS } from "../../../data/projects";
+import { getPostGroups, postHref, LANGS, LANG_LABEL, DEFAULT_LANG, type Lang } from "../../../lib/posts";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("posts", ({ data }) => !data.draft);
-  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+  const groups = await getPostGroups();
+  return groups.map((group) => ({ params: { id: group.slug }, props: { group } }));
 }
 
-const { post } = Astro.props;
-const { Content, headings } = await render(post);
-const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const { group } = Astro.props;
 
-const builtOn = post.data.project
-  ? PROJECTS.find((p) => p.name === post.data.project)
-  : undefined;
-const hasAside = toc.length > 0 || builtOn;
+// Every translation is rendered into the page; CSS shows one at a time.
+const panes = await Promise.all(
+  group.langs.map(async (lang: Lang) => {
+    const entry = group.versions[lang]!;
+    const { Content, headings } = await render(entry);
+    const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+    const builtOn = entry.data.project
+      ? PROJECTS.find((p) => p.name === entry.data.project)
+      : undefined;
+    // The button offers the language you're not reading, so its label flips
+    // with the pane: reading EN it says PT, and vice versa.
+    const other = LANGS.find((l) => l !== lang)!;
+    const otherAvailable = group.langs.includes(other);
 
-const allPosts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()
+    return {
+      lang,
+      entry,
+      Content,
+      toc,
+      builtOn,
+      other,
+      otherAvailable,
+      otherTitle: otherAvailable
+        ? lang === "pt"
+          ? "Read in English"
+          : "Ler em português"
+        : lang === "pt"
+          ? "Não disponível em inglês"
+          : "Not available in Portuguese",
+      hasAside: toc.length > 0 || Boolean(builtOn),
+      when: entry.data.pubDate.toLocaleDateString(lang === "pt" ? "pt-BR" : "en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    };
+  })
 );
-const index = allPosts.findIndex((p) => p.id === post.id);
-const prev = index > 0 ? allPosts[index - 1] : null;
-const next = index < allPosts.length - 1 ? allPosts[index + 1] : null;
 
-const when = post.data.pubDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+// The language a reader lands in, unless they've picked another one before.
+const openIn: Lang = group.langs.includes(DEFAULT_LANG) ? DEFAULT_LANG : group.langs[0]!;
+
+const groups = await getPostGroups();
+const ordered = [...groups].sort(
+  (a, b) => a.primary.data.pubDate.valueOf() - b.primary.data.pubDate.valueOf()
+);
+const index = ordered.findIndex((g) => g.slug === group.slug);
+const prev = index > 0 ? ordered[index - 1] : null;
+const next = index < ordered.length - 1 ? ordered[index + 1] : null;
 ---
-<BaseLayout title={post.data.title} description={post.data.dek} active="writing">
+<BaseLayout
+  title={group.primary.data.title}
+  description={group.primary.data.dek}
+  active="writing"
+>
+  <!-- Runs before the panes are painted, so the stored choice doesn't flash.
+       It only ever applies a language this post actually has. -->
+  <script is:inline define:vars={{ available: group.langs, openIn }}>
+    (function () {
+      var pick = openIn;
+      try {
+        var stored = localStorage.getItem("sb-post-lang");
+        if (stored && available.indexOf(stored) !== -1) pick = stored;
+      } catch (e) {}
+      document.documentElement.setAttribute("data-post-lang", pick);
+    })();
+  </script>
+
   <div class="rule"></div>
-  <div class="column head">
-    <div class="meta">
-      <span class="tag">{post.data.category}</span>
-      <span class="date">{when}{post.data.tags.length ? ` · ${post.data.tags.join(", ")}` : ""}</span>
-    </div>
-    <h1>{post.data.title}</h1>
-  </div>
 
-  <div class:list={["column", "body", { "with-aside": hasAside }]}>
-    <article class="prose">
-      <Content />
-    </article>
+  {panes.map((pane) => (
+    <div
+      class:list={["lang-pane", { "is-default": pane.lang === openIn }]}
+      data-lang={pane.lang}
+      lang={pane.lang}
+    >
+      <div class="column head">
+        <div class="meta">
+          <span class="tag">{pane.entry.data.category}</span>
+          <span class="date">
+            {pane.when}
+            {pane.entry.data.tags.length ? ` · ${pane.entry.data.tags.join(", ")}` : ""}
+          </span>
+          <button
+            type="button"
+            class="lang-btn"
+            data-target={pane.other}
+            disabled={!pane.otherAvailable}
+            title={pane.otherTitle}
+            aria-label={pane.otherTitle}
+          >
+            {LANG_LABEL[pane.other]}
+          </button>
+        </div>
+        <h1>{pane.entry.data.title}</h1>
+      </div>
 
-    {hasAside && (
-      <aside class="aside">
-        {toc.length > 0 && (
-          <div class="card">
-            <p class="card-label">On this page</p>
-            <nav class="toc">
-              {toc.map((h) => (
-                <a href={`#${h.slug}`} class:list={["toc-item", { nested: h.depth === 3 }]}>
-                  &rarr; {h.text}
+      <div class:list={["column", "body", { "with-aside": pane.hasAside }]}>
+        <article class="prose">
+          <pane.Content />
+        </article>
+
+        {pane.hasAside && (
+          <aside class="aside">
+            {pane.toc.length > 0 && (
+              <div class="card">
+                <p class="card-label">{pane.lang === "pt" ? "Nesta página" : "On this page"}</p>
+                <nav class="toc">
+                  {pane.toc.map((h) => (
+                    <a href={`#${h.slug}`} class:list={["toc-item", { nested: h.depth === 3 }]}>
+                      &rarr; {h.text}
+                    </a>
+                  ))}
+                </nav>
+              </div>
+            )}
+
+            {pane.builtOn && (
+              <div class="card built">
+                <p class="built-title">{pane.lang === "pt" ? "Feito com isto" : "Built on this"}</p>
+                <p class="built-what">{pane.builtOn.what}</p>
+                <a href={pane.builtOn.host ? `https://${pane.builtOn.host}` : "/projects/"} class="built-link">
+                  {pane.lang === "pt" ? "Abrir projeto" : "Open project"} &rarr;
                 </a>
-              ))}
-            </nav>
-          </div>
+              </div>
+            )}
+          </aside>
         )}
-
-        {builtOn && (
-          <div class="card built">
-            <p class="built-title">Built on this</p>
-            <p class="built-what">{builtOn.what}</p>
-            <a href={builtOn.host ? `https://${builtOn.host}` : "/projects/"} class="built-link">
-              Open project &rarr;
-            </a>
-          </div>
-        )}
-      </aside>
-    )}
-  </div>
+      </div>
+    </div>
+  ))}
 
   <div class="column pager">
-    {prev ? <a href={`/writing/${prev.id}/`}>&larr; {prev.data.title}</a> : <span />}
-    {next ? <a href={`/writing/${next.id}/`} class="next">{next.data.title} &rarr;</a> : <span />}
+    {prev ? <a href={postHref(prev.primary)}>&larr; {prev.primary.data.title}</a> : <span />}
+    {next ? <a href={postHref(next.primary)} class="next">{next.primary.data.title} &rarr;</a> : <span />}
   </div>
+
+  <script is:inline>
+    (function () {
+      document.querySelectorAll(".lang-btn[data-target]:not([disabled])").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var lang = b.dataset.target;
+          document.documentElement.setAttribute("data-post-lang", lang);
+          try { localStorage.setItem("sb-post-lang", lang); } catch (e) {}
+        });
+      });
+    })();
+  </script>
 </BaseLayout>
 
 <style>
-  .rule { height: 6px; background: var(--violet); }
+  /* One translation shows at a time. `.is-default` is what renders without JS;
+     an explicit choice on <html> overrides it. The inline script only ever
+     sets a language this post actually has, so nothing can hide every pane. */
+  .lang-pane { display: none; }
+  .lang-pane.is-default { display: block; }
+  :root[data-post-lang="en"] .lang-pane[data-lang="en"],
+  :root[data-post-lang="pt"] .lang-pane[data-lang="pt"] { display: block; }
+  :root[data-post-lang="en"] .lang-pane:not([data-lang="en"]),
+  :root[data-post-lang="pt"] .lang-pane:not([data-lang="pt"]) { display: none; }
+
+  /* Sits at the end of the meta row. `margin-left: auto` reads as a control
+     rather than one more piece of metadata — drop it to tuck it next to the date. */
+  .lang-btn {
+    margin-left: auto;
+    padding: 5px 10px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font: var(--type-tag);
+    letter-spacing: var(--type-tag-track);
+    text-transform: uppercase;
+    box-shadow: var(--shadow-pill);
+    cursor: pointer;
+  }
+  .lang-btn:hover:not([disabled]) { background: var(--violet); color: var(--on-accent); }
+  /* Presses in, like a real key. */
+  .lang-btn:active:not([disabled]) { transform: translateY(1px); box-shadow: none; }
+  .lang-btn[disabled] { opacity: .35; box-shadow: none; cursor: not-allowed; }
 
   /* head, body and pager all ride the shared .column, so the prose starts on
      the wordmark's edge and the sidebar ends on the nav's, same as every

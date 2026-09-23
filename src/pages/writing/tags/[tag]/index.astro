@@ -1,25 +1,23 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "../../../../layouts/BaseLayout.astro";
 import PostList from "../../../../components/PostList.astro";
 import TagPills from "../../../../components/TagPills.astro";
 import { tagCounts, tagSlug } from "../../../../lib/tags";
+import { getListedPosts } from "../../../../lib/posts";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("posts", ({ data }) => !data.draft);
+  const posts = await getListedPosts();
   return tagCounts(posts).map(({ tag, slug }) => ({
     params: { tag: slug },
     props: {
       tag,
-      posts: posts
-        .filter((p) => p.data.tags.some((t) => tagSlug(t) === slug))
-        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+      posts: posts.filter((p) => p.data.tags.some((t) => tagSlug(t) === slug)),
     },
   }));
 }
 
 const { tag, posts } = Astro.props;
-const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+const allPosts = await getListedPosts();
 const tags = tagCounts(allPosts);
 ---
 <BaseLayout title={`Writing · ${tag}`} active="writing">

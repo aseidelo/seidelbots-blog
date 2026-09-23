@@ -34,6 +34,8 @@ const nav = [
   <link rel="canonical" href={new URL(Astro.url.pathname, SITE.url)} />
   <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <script is:inline>
     try {
       var saved = localStorage.getItem("sb-theme");
@@ -173,7 +175,34 @@ const nav = [
     box-shadow: var(--shadow-card);
     font: 800 18px/1 var(--font-display);
     letter-spacing: -0.02em;
-    color: var(--ink);
+    /* A touch softer than the full ink the borders use, so the sign reads as
+       painted on rather than stamped. Dark mode overrides this below. */
+    color: var(--ink-body);
+  }
+
+  /* The wordmark is the shop sign. After dark it stays lit: the panel keeps its
+     white face while the ground goes dark, and a warm halo spills off it.
+     The halo rides in the element's own box-shadow, after --shadow-card, so it
+     paints OUTSIDE the border box and UNDER the border — the shop's black edge
+     stays crisp and only the light that escapes the panel is visible. */
+  :root[data-theme="dark"] .wordmark {
+    background: #fff;
+    color: var(--edge);
+    box-shadow:
+      var(--shadow-card),
+      0 0 6px 3px rgba(253, 231, 194, .85),
+      0 0 30px 4px rgba(255, 186, 90, .3);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .wordmark {
+      background: #fff;
+      color: var(--edge);
+      box-shadow:
+        var(--shadow-card),
+        0 0 6px 3px rgba(253, 231, 194, .85),
+        0 0 30px 4px rgba(255, 186, 90, .3);
+    }
   }
 
   .nav {

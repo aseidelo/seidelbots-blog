@@ -29,6 +29,10 @@ a { color: inherit; }
 
 img { max-width: 100%; }
 
+/* Violet band under the header. Per the token comments, violet is the identity
+   accent — it marks the pages that are about the shop itself. */
+.rule { height: 6px; background: var(--violet); }
+
 /* Markdown mapping for post bodies — see tokens/typography.css header comment. */
 .prose {
   font: var(--type-body);

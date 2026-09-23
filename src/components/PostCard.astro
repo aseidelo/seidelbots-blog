@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { postHref } from "../lib/posts";
 import Slot from "./Slot.astro";
 
 interface Props {
@@ -17,7 +18,7 @@ const icon = post.data.icon ?? post.data.category.toLowerCase();
       <span class="tag">{post.data.category}</span>
       <span class="date">{when}</span>
     </div>
-    <a href={`/writing/${post.id}/`} class="title">{post.data.title}</a>
+    <a href={postHref(post)} class="title">{post.data.title}</a>
     <p class="dek">{post.data.dek}</p>
   </div>
 </article>

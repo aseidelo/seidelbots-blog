@@ -1,17 +1,16 @@
 ---
-import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PostCard from "../components/PostCard.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import Illustration from "../components/Illustration.astro";
-import shopExterior from "../assets/shop-exterior.jpeg";
+import shopDay from "../assets/shop-exterior-day.jpeg";
+import shopNight from "../assets/shop-exterior-night.jpeg";
+import { getListedPosts } from "../lib/posts";
 import { SITE } from "../config";
 import { PROJECTS, type Project } from "../data/projects";
 
-const allPosts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
+const allPosts = await getListedPosts();
 const liveProjects = PROJECTS.filter((p) => p.status === "Live").length;
 
 // Posts and projects share one stream, newest first.
@@ -38,9 +37,10 @@ const stream: StreamItem[] = [
         </div>
       </div>
       <Illustration
-        src={shopExterior}
+        src={shopDay}
+        srcDark={shopNight}
         alt="The Seidelbots shop on a desert planet, where a shopkeep bot hands a glowing part to a smaller robot."
-        height="150px"
+        height="200px"
         eager
       />
     </div>
