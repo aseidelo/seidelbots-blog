@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { postHref } from "../lib/posts";
 
 interface Props {
   posts: CollectionEntry<"posts">[];
@@ -25,7 +26,7 @@ for (const post of posts) {
       <p class="eyebrow">{group.label}</p>
       <div class="rows">
         {group.posts.map((post) => (
-          <a href={`/writing/${post.id}/`} class="row">
+          <a href={postHref(post)} class="row">
             <div>
               <span class="title">{post.data.title}</span>
               <p class="dek">{post.data.dek}</p>

@@ -9,6 +9,8 @@ interface Props {
   src: ImageMetadata;
   /** Describe the drawing for someone who can't see it. */
   alt: string;
+  /** Optional dark-theme twin of `src`. CSS picks between them. */
+  srcDark?: ImageMetadata;
   height?: string;
   /** object-position, for when the subject isn't centred in the source. */
   position?: string;
@@ -16,18 +18,39 @@ interface Props {
   eager?: boolean;
 }
 
-const { src, alt, height = "200px", position = "center", eager = false } = Astro.props;
+const { src, alt, srcDark, height = "200px", position = "center", eager = false } = Astro.props;
+
+// A themed pair always loads both halves up front: a hidden lazy image only
+// starts downloading once shown, which makes the toggle flash.
+const loading = eager || srcDark ? "eager" : "lazy";
+const fetchpriority = eager ? "high" : "auto";
+const widths = [400, 800];
+const sizes = "(max-width: 640px) 100vw, 400px";
+const style = `object-position: ${position}`;
 ---
 <figure class="illustration" style={{ height }}>
   <Image
     src={src}
     alt={alt}
-    widths={[400, 800]}
-    sizes="(max-width: 640px) 100vw, 400px"
-    style={`object-position: ${position}`}
-    loading={eager ? "eager" : "lazy"}
-    fetchpriority={eager ? "high" : "auto"}
+    class={srcDark ? "day" : undefined}
+    widths={widths}
+    sizes={sizes}
+    style={style}
+    loading={loading}
+    fetchpriority={fetchpriority}
   />
+  {srcDark && (
+    <Image
+      src={srcDark}
+      alt={alt}
+      class="night"
+      widths={widths}
+      sizes={sizes}
+      style={style}
+      loading={loading}
+      fetchpriority={fetchpriority}
+    />
+  )}
 </figure>
 
 <style>
@@ -45,4 +68,18 @@ const { src, alt, height = "200px", position = "center", eager = false } = Astro
     height: 100%;
     object-fit: cover;
   }
+
+  /* Default (no explicit choice): day, unless the OS asks for dark. */
+  .illustration :global(.night) { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .illustration :global(.day) { display: none; }
+    :root:not([data-theme="light"]) .illustration :global(.night) { display: block; }
+  }
+
+  /* An explicit choice from the toggle wins over the OS. */
+  :root[data-theme="light"] .illustration :global(.day) { display: block; }
+  :root[data-theme="light"] .illustration :global(.night) { display: none; }
+  :root[data-theme="dark"] .illustration :global(.day) { display: none; }
+  :root[data-theme="dark"] .illustration :global(.night) { display: block; }
 </style>

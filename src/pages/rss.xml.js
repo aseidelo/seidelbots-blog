@@ -1,9 +1,9 @@
 import rss from "@astrojs/rss";
-import { getCollection } from "astro:content";
+import { getListedPosts, postHref } from "../lib/posts";
 import { SITE } from "../config";
 
 export async function GET(context) {
-  const posts = await getCollection("posts", ({ data }) => !data.draft);
+  const posts = await getListedPosts();
   return rss({
     title: SITE.title,
     description: SITE.description,
@@ -14,7 +14,7 @@ export async function GET(context) {
         title: post.data.title,
         description: post.data.dek,
         pubDate: post.data.pubDate,
-        link: `/writing/${post.id}/`,
+        link: postHref(post),
       })),
   });
 }
