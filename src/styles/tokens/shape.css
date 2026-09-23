@@ -1,0 +1,57 @@
+/* Seidelbots shape, shadow and spacing.
+   The whole look is one idea: every object is a sticker — 2px ink outline,
+   generous radius, and a small solid offset shadow in the same ink.
+   No blur, no transparency, no gradients. */
+
+:root {
+  --border-width: 2px;
+
+  --radius-card: 14px;
+  --radius-tile: 10px;   /* illustration + icon slots */
+  --radius-code: 12px;
+  --radius-logo: 9px;
+  --radius-pill: 999px;
+
+
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 26px; --space-7: 34px; --space-8: 44px;
+
+  --gutter-page: clamp(20px, 4vw, 48px);   /* horizontal page padding — fluid, not a fixed 34px */
+  --gap-list: 14px;      /* between stacked cards */
+  --gap-columns: 32px;   /* prose column to sidebar */
+  --aside-width: 210px;
+
+  /* Sections run edge to edge (backgrounds and dividers reach the viewport);
+     `.column` in global.css caps and centers their content at this width.
+     Side spacing comes only from `--gutter-page`, not a separate margin. */
+  --frame-max-width: 1140px;
+}
+
+/* Composites must be declared in EVERY theme scope: var() substitution happens
+   where the property is declared, so a :root-only composite would freeze the
+   primitives of whichever theme :root resolved to. */
+:root, [data-theme="light"], [data-theme="dark"] {
+  --border: var(--border-width) solid var(--edge);
+  --border-dashed: var(--border-width) dashed var(--edge-dashed);
+  --divider: 2px solid var(--rule-strong);
+  --hairline: 1px solid var(--rule);
+  --shadow-card: 2px 2px 0 var(--shadow-ink);
+  --shadow-pill: 1px 1px 0 var(--shadow-ink);
+  --hatch: repeating-linear-gradient(135deg,
+    var(--surface) 0, var(--surface) 7px,
+    var(--violet-tint) 7px, var(--violet-tint) 14px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --border: var(--border-width) solid var(--edge);
+  --border-dashed: var(--border-width) dashed var(--edge-dashed);
+  --divider: 2px solid var(--rule-strong);
+  --hairline: 1px solid var(--rule);
+  --shadow-card: 2px 2px 0 var(--shadow-ink);
+  --shadow-pill: 1px 1px 0 var(--shadow-ink);
+  --hatch: repeating-linear-gradient(135deg,
+    var(--surface) 0, var(--surface) 7px,
+    var(--violet-tint) 7px, var(--violet-tint) 14px);
+  }
+}

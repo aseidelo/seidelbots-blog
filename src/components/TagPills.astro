@@ -1,0 +1,37 @@
+---
+interface Props {
+  tags: { tag: string; count: number; slug: string }[];
+  total: number;
+  /** Slug of the tag currently being filtered on, if any. */
+  active?: string;
+}
+
+const { tags, total, active } = Astro.props;
+---
+{tags.length > 0 && (
+  <div class="pills">
+    <a href="/writing/" class:list={["pill", { active: !active }]}>All {total}</a>
+    {tags.map((t) => (
+      <a href={`/writing/tags/${t.slug}/`} class:list={["pill", { active: active === t.slug }]}>
+        {t.tag} {t.count}
+      </a>
+    ))}
+  </div>
+)}
+
+<style>
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; font: 600 12px/1 var(--font-body); }
+  .pill {
+    padding: 7px 11px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .pill.active {
+    background: var(--amber);
+    color: var(--on-accent);
+    box-shadow: var(--shadow-pill);
+  }
+</style>

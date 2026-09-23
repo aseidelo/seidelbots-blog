@@ -1,0 +1,159 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { PROJECTS } from "../../../data/projects";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts", ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const builtOn = post.data.project
+  ? PROJECTS.find((p) => p.name === post.data.project)
+  : undefined;
+const hasAside = toc.length > 0 || builtOn;
+
+const allPosts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf()
+);
+const index = allPosts.findIndex((p) => p.id === post.id);
+const prev = index > 0 ? allPosts[index - 1] : null;
+const next = index < allPosts.length - 1 ? allPosts[index + 1] : null;
+
+const when = post.data.pubDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+---
+<BaseLayout title={post.data.title} description={post.data.dek} active="writing">
+  <div class="rule"></div>
+  <div class="column head">
+    <div class="meta">
+      <span class="tag">{post.data.category}</span>
+      <span class="date">{when}{post.data.tags.length ? ` · ${post.data.tags.join(", ")}` : ""}</span>
+    </div>
+    <h1>{post.data.title}</h1>
+  </div>
+
+  <div class:list={["column", "body", { "with-aside": hasAside }]}>
+    <article class="prose">
+      <Content />
+    </article>
+
+    {hasAside && (
+      <aside class="aside">
+        {toc.length > 0 && (
+          <div class="card">
+            <p class="card-label">On this page</p>
+            <nav class="toc">
+              {toc.map((h) => (
+                <a href={`#${h.slug}`} class:list={["toc-item", { nested: h.depth === 3 }]}>
+                  &rarr; {h.text}
+                </a>
+              ))}
+            </nav>
+          </div>
+        )}
+
+        {builtOn && (
+          <div class="card built">
+            <p class="built-title">Built on this</p>
+            <p class="built-what">{builtOn.what}</p>
+            <a href={builtOn.host ? `https://${builtOn.host}` : "/projects/"} class="built-link">
+              Open project &rarr;
+            </a>
+          </div>
+        )}
+      </aside>
+    )}
+  </div>
+
+  <div class="column pager">
+    {prev ? <a href={`/writing/${prev.id}/`}>&larr; {prev.data.title}</a> : <span />}
+    {next ? <a href={`/writing/${next.id}/`} class="next">{next.data.title} &rarr;</a> : <span />}
+  </div>
+</BaseLayout>
+
+<style>
+  .rule { height: 6px; background: var(--violet); }
+
+  /* head, body and pager all ride the shared .column, so the prose starts on
+     the wordmark's edge and the sidebar ends on the nav's, same as every
+     other page. */
+  .head { padding-block: 30px 8px; }
+  .meta { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .tag {
+    font: var(--type-tag);
+    letter-spacing: var(--type-tag-track);
+    text-transform: uppercase;
+    padding: 5px 8px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--amber);
+    color: var(--on-accent);
+  }
+  .date { font: var(--type-meta); color: var(--ink-subtle); }
+  h1 { margin: 0 0 18px; font: var(--type-display); letter-spacing: var(--type-display-track); max-width: var(--measure-title); }
+
+  /* Prose column + sidebar, as in the design template. */
+  .body { padding-block: 0 34px; }
+  .body.with-aside {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--aside-width);
+    gap: var(--gap-columns);
+    align-items: start;
+  }
+  /* Without a sidebar there's no aside to bound the text, so cap it here. */
+  .body:not(.with-aside) .prose { max-width: var(--measure-prose); }
+
+  .aside { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 24px; }
+  .card {
+    border: var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    box-shadow: var(--shadow-card);
+    padding: 14px;
+  }
+  .card-label {
+    margin: 0 0 9px;
+    font: var(--type-tag);
+    letter-spacing: var(--type-eyebrow-track);
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+  .toc { display: flex; flex-direction: column; gap: 8px; font: var(--type-toc); }
+  .toc-item { color: var(--ink-muted); text-decoration: none; }
+  .toc-item:hover { color: var(--ink); }
+  .toc-item.nested { padding-left: 12px; }
+
+  .built { background: var(--amber); color: var(--on-accent); }
+  .built-title { margin: 0 0 6px; font: 700 14px/1.3 var(--font-display); }
+  .built-what { margin: 0 0 10px; font: 400 13px/1.5 var(--font-body); }
+  .built-link {
+    display: inline-block;
+    font: var(--type-button-sm);
+    color: var(--on-accent);
+    text-decoration: none;
+    padding: 8px 11px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--on-accent-surface);
+  }
+
+  @media (max-width: 760px) {
+    .body.with-aside { grid-template-columns: 1fr; }
+    .aside { position: static; }
+  }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding-block: 0 30px;
+    font: var(--type-nav);
+    color: var(--ink-muted);
+  }
+  .pager a { text-decoration: none; color: var(--ink-muted); }
+  .pager a.next { color: var(--ink); }
+</style>

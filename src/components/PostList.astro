@@ -1,0 +1,68 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  posts: CollectionEntry<"posts">[];
+  empty?: string;
+}
+
+const { posts, empty = "Nothing published yet." } = Astro.props;
+
+type Group = { label: string; posts: CollectionEntry<"posts">[] };
+const groups: Group[] = [];
+for (const post of posts) {
+  const label = post.data.pubDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const group = groups.find((g) => g.label === label);
+  if (group) group.posts.push(post);
+  else groups.push({ label, posts: [post] });
+}
+---
+{groups.length === 0 ? (
+  <p class="empty">{empty}</p>
+) : (
+  groups.map((group) => (
+    <div>
+      <p class="eyebrow">{group.label}</p>
+      <div class="rows">
+        {group.posts.map((post) => (
+          <a href={`/writing/${post.id}/`} class="row">
+            <div>
+              <span class="title">{post.data.title}</span>
+              <p class="dek">{post.data.dek}</p>
+            </div>
+            <div class="side">
+              {post.data.pubDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              <br />
+              <span class="tags">{post.data.tags.join(", ")}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  ))
+)}
+
+<style>
+  .empty { font: var(--type-intro); color: var(--ink-subtle); margin-top: 20px; }
+  .eyebrow {
+    margin: 20px 0 10px;
+    font: var(--type-eyebrow);
+    letter-spacing: var(--type-eyebrow-track);
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+  .rows { border-top: var(--divider); }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 150px;
+    gap: 20px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: var(--hairline);
+    text-decoration: none;
+  }
+  .title { font: var(--type-list-title); letter-spacing: -0.01em; color: var(--ink); }
+  .dek { margin: 4px 0 0; font: var(--type-small); color: var(--ink-muted); }
+  .side { text-align: right; font: var(--type-meta); color: var(--ink-subtle); }
+  .tags { color: var(--ink); font-weight: 600; }
+</style>

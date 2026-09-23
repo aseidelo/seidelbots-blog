@@ -1,0 +1,78 @@
+---
+import type { Project } from "../data/projects";
+import Slot from "./Slot.astro";
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const label = project.status === "Live" ? "Live project" : project.status;
+const href = project.host ? `https://${project.host}` : "/projects/";
+---
+<article class="card">
+  <Slot kind="icon" spec={project.art} width="78px" />
+  <div class="text">
+    <div class="meta">
+      <span class:list={["tag", project.status === "Live" ? "green" : "amber"]}>{label}</span>
+      {project.host && <span class="host">{project.host}</span>}
+    </div>
+    <a href={href} class="title">{project.name}</a>
+    <p class="dek">{project.what}</p>
+  </div>
+  <a href={href} class="open">Open &rarr;</a>
+</article>
+
+<style>
+  /* Default stretch alignment lets the icon tile run the full card height,
+     as in the template; the button re-centers itself. position: relative
+     anchors the stretched link that makes the whole card clickable. */
+  .card {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    border: var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    background: var(--green-tint);
+    padding: 16px;
+  }
+  .card:hover { box-shadow: 3px 3px 0 var(--shadow-ink); }
+  .text { flex: 1; }
+  .meta { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .tag {
+    font: var(--type-tag);
+    letter-spacing: var(--type-tag-track);
+    text-transform: uppercase;
+    padding: 5px 8px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--on-accent);
+  }
+  .tag.green { background: var(--green); }
+  .tag.amber { background: var(--amber); }
+  .host { font: var(--type-mono-meta); color: var(--ink-subtle); }
+  .title {
+    display: block;
+    font: var(--type-card-title);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .title::after { content: ""; position: absolute; inset: 0; }
+  .dek { margin: 5px 0 0; font: var(--type-dek); color: var(--ink-muted); }
+  /* Sits above the stretched link so it stays separately clickable. */
+  .open {
+    position: relative;
+    flex: none;
+    align-self: center;
+    font: var(--type-button);
+    color: var(--ink);
+    text-decoration: none;
+    padding: 9px 13px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    box-shadow: var(--shadow-pill);
+  }
+</style>

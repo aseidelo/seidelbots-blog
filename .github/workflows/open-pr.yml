@@ -1,0 +1,48 @@
+name: Validar branch e abrir PR
+
+# Publicou uma feat/** no remoto: valida e, se passar, abre o PR para a main.
+on:
+  push:
+    branches: ["feat/**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: open-pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # O job precisa se chamar "validate" aqui e no ci.yml: o nome do check vira
+  # "validate / verify", e é por esse nome que a regra da main o exige.
+  validate:
+    uses: ./.github/workflows/validate.yml
+
+  open-pr:
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Abrir PR para a main (se ainda não houver)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          aberto=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq 'length')
+          if [ "$aberto" != "0" ]; then
+            echo "Já existe PR aberto de $BRANCH para main — nada a fazer."
+            exit 0
+          fi
+
+          nome="${BRANCH#feat/}"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "feat: ${nome//-/ }" \
+            --body "Aberto automaticamente por \`open-pr.yml\` depois da validação passar em \`$BRANCH\`."

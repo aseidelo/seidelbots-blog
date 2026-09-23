@@ -1,0 +1,19 @@
+name: CI
+
+# Rede de segurança para PR aberto na mão. O PR criado pelo open-pr.yml usa o
+# GITHUB_TOKEN e por isso não dispara este gatilho — mas os checks dele já
+# vieram colados no commit, então o PR nasce validado do mesmo jeito.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    uses: ./.github/workflows/validate.yml

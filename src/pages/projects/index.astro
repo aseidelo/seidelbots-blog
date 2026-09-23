@@ -1,0 +1,99 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Slot from "../../components/Slot.astro";
+import { PROJECTS } from "../../data/projects";
+
+const statusAccent = { Live: "green", Beta: "amber", Planned: "muted" } as const;
+---
+<BaseLayout title="Projects" active="projects">
+  <section class="intro">
+    <div class="column">
+      <h1>The shelf</h1>
+      <p>Units in service, each on its own subdomain. Real deployments, not demos.</p>
+    </div>
+  </section>
+
+  <section class="shelf">
+    <div class="column grid">
+    {PROJECTS.length === 0 ? (
+      <div class="empty">
+        <p class="eyebrow">Shelf's empty</p>
+        <p>Nothing shipped yet. First unit goes up here once it has a subdomain of its own.</p>
+      </div>
+    ) : (
+      PROJECTS.map((p) => (
+        <div class="card">
+          <Slot kind="band" spec={p.art} height="112px" />
+          <div class="card-body">
+            <div class="meta">
+              <span class={`badge ${statusAccent[p.status]}`}>{p.status}</span>
+              {p.host && <span class="host">{p.host}</span>}
+            </div>
+            <h2>{p.name}</h2>
+            <p class="what">{p.what}</p>
+            <p class="stack">{p.stack}</p>
+            <div class="actions">
+              {p.host && (
+                <a href={`https://${p.host}`} class="open" target="_blank" rel="noopener">Open &rarr;</a>
+              )}
+              {p.postSlug && <a href={`/writing/${p.postSlug}/`} class="read">Read the post</a>}
+            </div>
+          </div>
+        </div>
+      ))
+    )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro { padding-block: 28px 24px; border-bottom: var(--divider); background: var(--green-tint); }
+  .intro h1 { margin: 0 0 8px; font: var(--type-title); letter-spacing: var(--type-display-track); }
+  .intro p { margin: 0; max-width: 58ch; font: var(--type-intro); color: var(--ink-muted); }
+
+  .shelf { padding-block: 26px 30px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .empty {
+    grid-column: 1 / -1;
+    border: var(--border-dashed);
+    border-radius: var(--radius-card);
+    padding: 20px;
+  }
+  .empty .eyebrow {
+    margin: 0 0 6px;
+    font: var(--type-eyebrow);
+    letter-spacing: var(--type-eyebrow-track);
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+  }
+  .empty p:last-child { margin: 0; font: var(--type-small); color: var(--ink-subtle); }
+
+  .card { border: var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-card); background: var(--surface); overflow: hidden; }
+  .card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .meta { display: flex; align-items: center; gap: 8px; }
+  .badge {
+    font: var(--type-tag);
+    letter-spacing: var(--type-tag-track);
+    text-transform: uppercase;
+    padding: 5px 8px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--on-accent);
+  }
+  .badge.green { background: var(--green); }
+  .badge.amber { background: var(--amber); }
+  .badge.muted { background: var(--surface); color: var(--ink-subtle); }
+  .host { font: var(--type-mono-meta); color: var(--ink-subtle); }
+  h2 { margin: 0; font: var(--type-h3); letter-spacing: -0.01em; }
+  .what { margin: 0; font: var(--type-small); color: var(--ink-muted); }
+  .stack { margin: 0; font: var(--type-mono-meta); color: var(--ink-subtle); }
+  .actions { display: flex; gap: 8px; margin-top: auto; padding-top: 6px; font: var(--type-button-sm); }
+  .actions a { text-decoration: none; padding: 8px 12px; border: var(--border); border-radius: var(--radius-pill); }
+  .actions .open { color: var(--on-accent); background: var(--amber); box-shadow: var(--shadow-pill); }
+  .actions .read { color: var(--ink); background: var(--surface); }
+</style>

@@ -1,0 +1,61 @@
+---
+import type { CollectionEntry } from "astro:content";
+import Slot from "./Slot.astro";
+
+interface Props {
+  post: CollectionEntry<"posts">;
+}
+
+const { post } = Astro.props;
+const when = post.data.pubDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+const icon = post.data.icon ?? post.data.category.toLowerCase();
+---
+<article class="card">
+  <Slot kind="icon" spec={icon} width="78px" />
+  <div class="text">
+    <div class="meta">
+      <span class="tag">{post.data.category}</span>
+      <span class="date">{when}</span>
+    </div>
+    <a href={`/writing/${post.id}/`} class="title">{post.data.title}</a>
+    <p class="dek">{post.data.dek}</p>
+  </div>
+</article>
+
+<style>
+  /* position: relative anchors the stretched link below, which makes the
+     whole card clickable while keeping a single real <a> for assistive tech. */
+  .card {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    border: var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    background: var(--surface);
+    padding: 16px;
+  }
+  .card:hover { box-shadow: 3px 3px 0 var(--shadow-ink); }
+  .text { flex: 1; }
+  .meta { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .tag {
+    font: var(--type-tag);
+    letter-spacing: var(--type-tag-track);
+    text-transform: uppercase;
+    padding: 5px 8px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--amber);
+    color: var(--on-accent);
+  }
+  .date { font: var(--type-meta); color: var(--ink-subtle); }
+  .title {
+    display: block;
+    font: var(--type-card-title);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .title::after { content: ""; position: absolute; inset: 0; }
+  .dek { margin: 5px 0 0; font: var(--type-dek); color: var(--ink-muted); }
+</style>

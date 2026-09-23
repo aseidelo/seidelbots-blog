@@ -1,0 +1,37 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Slot from "../components/Slot.astro";
+---
+<BaseLayout title="Out of stock">
+  <div class="column wrap">
+    <Slot spec="bot shrugging at an empty shelf" height="180px" />
+    <div>
+      <p class="eyebrow">404 · out of stock</p>
+      <h1>That part isn't on the shelf.</h1>
+      <p class="dek">Either it was never made, or it got renamed. The catalog below is the honest version.</p>
+      <div class="actions">
+        <a href="/" class="primary">Back to the index</a>
+        <a href="/projects/" class="secondary">Browse the shelf</a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 30px;
+    align-items: center;
+    padding-block: 44px 48px;
+  }
+  @media (max-width: 640px) { .wrap { grid-template-columns: 1fr; } }
+
+  .eyebrow { margin: 0 0 8px; font: var(--type-mono-meta); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-subtle); }
+  h1 { margin: 0 0 12px; font: var(--type-title); letter-spacing: var(--type-display-track); max-width: 20ch; }
+  .dek { margin: 0 0 20px; max-width: 48ch; font: var(--type-intro); color: var(--ink-muted); }
+  .actions { display: flex; gap: 8px; font: var(--type-button); }
+  .actions a { text-decoration: none; padding: 10px 14px; border: var(--border); border-radius: var(--radius-pill); }
+  .actions .primary { color: var(--on-accent); background: var(--amber); box-shadow: var(--shadow-pill); }
+  .actions .secondary { color: var(--ink); background: var(--surface); }
+</style>

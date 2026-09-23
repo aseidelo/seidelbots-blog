@@ -1,0 +1,51 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import PostList from "../../../../components/PostList.astro";
+import TagPills from "../../../../components/TagPills.astro";
+import { tagCounts, tagSlug } from "../../../../lib/tags";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts", ({ data }) => !data.draft);
+  return tagCounts(posts).map(({ tag, slug }) => ({
+    params: { tag: slug },
+    props: {
+      tag,
+      posts: posts
+        .filter((p) => p.data.tags.some((t) => tagSlug(t) === slug))
+        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+const tags = tagCounts(allPosts);
+---
+<BaseLayout title={`Writing · ${tag}`} active="writing">
+  <section class="intro">
+    <div class="column">
+      <h1>{tag}</h1>
+      <p>{posts.length} post{posts.length === 1 ? "" : "s"} tagged “{tag}”.</p>
+      <TagPills tags={tags} total={allPosts.length} active={tagSlug(tag)} />
+    </div>
+  </section>
+
+  <section class="list">
+    <div class="column">
+      <PostList posts={posts} empty={`Nothing tagged “${tag}” yet.`} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro {
+    padding-block: 28px 20px;
+    border-bottom: var(--divider);
+    background: var(--violet-tint);
+  }
+  .intro h1 { margin: 0 0 8px; font: var(--type-title); letter-spacing: var(--type-display-track); }
+  .intro p { margin: 0 0 16px; max-width: var(--measure-intro); font: var(--type-intro); color: var(--ink-muted); }
+
+  .list { padding-block: 8px 30px; }
+</style>

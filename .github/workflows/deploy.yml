@@ -1,0 +1,85 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # Job sem credencial nenhuma: é aqui que roda código do repo (npm ci, build).
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Checagem de tipos e conteúdo
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
+  # Job com credencial AWS: só mexe em artefato pronto, não executa código do repo.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: gha-blog-deploy-${{ github.run_id }}
+
+      # Só o que está em _astro/ tem hash no nome, então só isso pode ser imutável.
+      - name: Sync dos assets com hash (cache longo)
+        run: |
+          aws s3 sync dist/ "s3://${{ secrets.S3_BUCKET }}" \
+            --delete \
+            --no-progress \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "*" \
+            --include "_astro/*"
+
+      # Todo o resto (HTML, feed, favicons) precisa poder mudar a qualquer momento.
+      - name: Sync do HTML, feed e favicons (sempre revalida)
+        run: |
+          aws s3 sync dist/ "s3://${{ secrets.S3_BUCKET }}" \
+            --delete \
+            --no-progress \
+            --cache-control "public,max-age=0,must-revalidate" \
+            --exclude "_astro/*"
+
+      - name: Invalidar cache do CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*"

@@ -1,0 +1,102 @@
+/* Seidelbots color system.
+   Two modes. Light is the default; dark is applied by [data-theme="dark"]
+   (or automatically via prefers-color-scheme at the bottom of this file).
+
+   Rules of the system:
+   - One near-black ink draws every border and every offset shadow (--edge and
+     --shadow-ink hold the same value in both modes). In dark the GROUND is
+     lifted instead of the ink, so the offset still reads as depth.
+   - --slab is the one always-dark field (code-block header, project shell bar).
+   - Accents are backgrounds, never text colors. Text on an accent is always ink.
+   - Three accents, one role each: violet = identity, amber = writing, green = shipped.
+   - Tints are the only large color fields. Cards stay surface-colored. */
+
+:root {
+  /* --- base: light --- */
+  --ink:            #1d1a24;   /* borders, shadows, primary text */
+  --ink-body:       #2c2839;   /* long-form body copy */
+  --ink-muted:      #4a4557;   /* secondary copy, dek lines */
+  --ink-subtle:     #6b6480;   /* meta, dates, monospace strings */
+  --canvas:         #fdfbf6;   /* page ground */
+  --surface:        #ffffff;   /* cards, rows, pills */
+  --surface-raised: #ffffff;
+  --rule:           #ddd6e8;   /* hairline between list rows */
+  --rule-strong:    #1d1a24;   /* 2px section divider = ink */
+  --edge:           #1d1a24;   /* card border */
+  --shadow-ink:     #1d1a24;   /* offset shadow — same ink in light mode */
+  --slab:           #1d1a24;   /* always-dark bar (code header, project shell bar) */
+  --edge-dashed:    #a79fbb;   /* dashed "not yet real" border */
+
+  /* accents — backgrounds only */
+  --violet:         oklch(.58 .16 258);  /* identity: post rule, project shell mark */
+  --violet-tint:    oklch(.96 .02 258);  /* hero + callout fields */
+  --amber:          oklch(.88 .09 62);   /* writing: active nav, essay tag */
+  --amber-tint:     #fff7e6;             /* highlighted table row */
+  --green:          oklch(.84 .12 148);  /* shipped: live badge, projects */
+  --green-tint:     oklch(.97 .03 148);
+  --on-accent:      #1d1a24;             /* text on any accent */
+  --on-accent-surface: #fdfbf6;          /* a card/button ground INSIDE an accent field —
+                                            stays light in both themes so --on-accent reads */
+
+  /* semantic aliases — prefer these in components */
+  --text-primary:   var(--ink);
+  --text-body:      var(--ink-body);
+  --text-secondary: var(--ink-muted);
+  --text-meta:      var(--ink-subtle);
+  --bg-page:        var(--canvas);
+  --bg-card:        var(--surface);
+  --bg-band:        var(--violet-tint);
+  --tag-essay:      var(--amber);
+  --tag-live:       var(--green);
+  --shadow-color:   var(--edge);
+}
+
+/* Explicit light scope — usable on any element, including inside a dark page. */
+[data-theme="light"] {
+  --ink:#1d1a24; --ink-body:#2c2839; --ink-muted:#4a4557; --ink-subtle:#6b6480;
+  --canvas:#fdfbf6; --surface:#ffffff; --surface-raised:#ffffff; --shadow-ink:#1d1a24; --slab:#1d1a24;
+  --rule:#ddd6e8; --rule-strong:#1d1a24; --edge:#1d1a24; --edge-dashed:#a79fbb;
+  --violet:oklch(.58 .16 258); --violet-tint:oklch(.96 .02 258);
+  --amber:oklch(.88 .09 62); --amber-tint:#fff7e6;
+  --green:oklch(.84 .12 148); --green-tint:oklch(.97 .03 148);
+  --on-accent:#1d1a24; --on-accent-surface:#fdfbf6; --display-ink:#1d1a24;
+}
+
+[data-theme="dark"] {
+  --ink:            #f2eff8;
+  --ink-body:       #ded7ec;
+  --ink-muted:      #b8afcd;
+  --ink-subtle:     #9c92b5;
+  --canvas:         #262035;   /* ground is lifted so the near-black edge reads */
+  --surface:        #332b47;
+  --surface-raised: #3b3253;
+  --rule:           #4e4468;
+  --rule-strong:    #6a5e88;
+  --edge:           #0e0c14;   /* border and shadow are the same ink, as in light */
+  --shadow-ink:     #0e0c14;
+  --slab:           #0e0c14;
+  --edge-dashed:    #7a6ea0;
+
+  --violet:         oklch(.68 .15 258);
+  --violet-tint:    #2e2745;
+  --amber:          oklch(.86 .1 62);
+  --amber-tint:     #3b3253;
+  --green:          oklch(.82 .13 148);
+  --green-tint:     #26382f;
+  --on-accent:      #15131b;
+  --on-accent-surface: #fdfbf6;
+
+  --display-ink:    #f7f4fc;   /* headings sit a touch brighter than body */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink:#f2eff8; --ink-body:#ded7ec; --ink-muted:#b8afcd; --ink-subtle:#9c92b5;
+    --canvas:#262035; --surface:#332b47; --surface-raised:#3b3253;
+    --rule:#4e4468; --rule-strong:#6a5e88; --edge:#0e0c14; --shadow-ink:#0e0c14; --slab:#0e0c14; --edge-dashed:#7a6ea0;
+    --violet:oklch(.68 .15 258); --violet-tint:#2e2745;
+    --amber:oklch(.86 .1 62); --amber-tint:#3b3253;
+    --green:oklch(.82 .13 148); --green-tint:#26382f;
+    --on-accent:#15131b; --on-accent-surface:#fdfbf6; --display-ink:#f7f4fc;
+  }
+}

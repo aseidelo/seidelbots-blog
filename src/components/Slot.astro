@@ -1,0 +1,46 @@
+---
+// A hatched placeholder standing in for a drawing that doesn't exist yet.
+// Per the design system: the mono label is a specification of what belongs
+// there, not decoration. Replace a Slot with a real <img> once drawn.
+interface Props {
+  /** illustration = bordered tile, icon = small tile, band = flush card header */
+  kind?: "illustration" | "icon" | "band";
+  /** What the drawing should show, e.g. "shopkeep bot handing over a part" */
+  spec: string;
+  height?: string;
+  width?: string;
+}
+
+const { kind = "illustration", spec, height, width } = Astro.props;
+---
+<div class:list={["slot", kind]} style={{ height, width }}>
+  <span>{kind === "icon" ? "ICON" : "ILLUSTRATION"}<br />{spec}</span>
+</div>
+
+<style>
+  .slot {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    background: var(--hatch);
+    color: var(--ink-subtle);
+  }
+  .illustration {
+    border: var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 12px;
+    font: 10px/1.5 var(--font-mono);
+  }
+  .icon {
+    flex: none;
+    border: var(--border);
+    border-radius: var(--radius-tile);
+    padding: 6px;
+    font: 9px/1.4 var(--font-mono);
+  }
+  .band {
+    border-bottom: var(--border);
+    font: 10px/1.5 var(--font-mono);
+  }
+</style>

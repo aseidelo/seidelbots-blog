@@ -1,0 +1,117 @@
+---
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PostCard from "../components/PostCard.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import Slot from "../components/Slot.astro";
+import { SITE } from "../config";
+import { PROJECTS, type Project } from "../data/projects";
+
+const allPosts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const liveProjects = PROJECTS.filter((p) => p.status === "Live").length;
+
+// Posts and projects share one stream, newest first.
+type StreamItem =
+  | { kind: "post"; date: Date; post: CollectionEntry<"posts"> }
+  | { kind: "project"; date: Date; project: Project };
+
+const stream: StreamItem[] = [
+  ...allPosts.map((post) => ({ kind: "post" as const, date: post.data.pubDate, post })),
+  ...PROJECTS.map((project) => ({ kind: "project" as const, date: new Date(project.shipped), project })),
+]
+  .sort((a, b) => b.date.valueOf() - a.date.valueOf())
+  .slice(0, 5);
+---
+<BaseLayout title={SITE.title} active="home">
+  <section class="hero">
+    <div class="column hero-grid">
+      <div>
+        <h1>{SITE.tagline}</h1>
+        <p>{SITE.description}</p>
+        <div class="stats">
+          <span class="pill">{allPosts.length} post{allPosts.length === 1 ? "" : "s"}</span>
+          <span class="pill">{liveProjects} live project{liveProjects === 1 ? "" : "s"}</span>
+        </div>
+      </div>
+      <Slot spec="shopkeep bot handing over a part" height="150px" />
+    </div>
+  </section>
+
+  <section class="stream">
+    <div class="column stream-list">
+      {stream.length === 0 ? (
+        <p class="empty">Nothing on the shelf yet. First post is coming.</p>
+      ) : (
+        stream.map((item) =>
+          item.kind === "post" ? <PostCard post={item.post} /> : <ProjectCard project={item.project} />
+        )
+      )}
+    </div>
+  </section>
+
+  {allPosts.length > stream.length && (
+    <div class="more">
+      <div class="column">
+        <a href="/writing/">See all {allPosts.length} &rarr;</a>
+      </div>
+    </div>
+  )}
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: 32px 28px;
+    border-bottom: var(--divider);
+    background: var(--violet-tint);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 250px;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (max-width: 700px) { .hero-grid { grid-template-columns: 1fr; } }
+
+  .hero h1 {
+    margin: 0 0 12px;
+    font: var(--type-hero);
+    letter-spacing: var(--type-display-track);
+    max-width: 22ch;
+  }
+  .hero p {
+    margin: 0 0 16px;
+    max-width: 50ch;
+    font: var(--type-intro);
+    color: var(--ink-muted);
+    text-wrap: pretty;
+  }
+  .stats { display: flex; gap: 8px; font: 600 12px/1 var(--font-body); }
+  .stats .pill {
+    padding: 6px 10px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+  }
+
+  .stream { padding-block: 26px 10px; }
+  .stream-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-list);
+  }
+  .empty { font: var(--type-intro); color: var(--ink-subtle); }
+
+  .more { padding-block: 18px 24px; font: var(--type-nav); }
+  .more a {
+    color: var(--ink);
+    text-decoration: none;
+    padding: 8px 14px;
+    border: var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    box-shadow: var(--shadow-pill);
+  }
+</style>

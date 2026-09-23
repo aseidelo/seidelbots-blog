@@ -1,0 +1,56 @@
+# Validação compartilhada. Chamada tanto no push de feat/** quanto em PR, para
+# que os checks tenham sempre o mesmo nome e possam ser exigidos na main.
+name: Validate
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      # Em pull_request, head_ref é a branch de origem; em push ela é vazia e
+      # caímos no ref_name. Assim a regra vale nos dois caminhos.
+      - name: Conferir padrão feat/<nome>
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if [[ ! "$BRANCH" =~ ^feat/[a-zA-Z0-9._-]+$ ]]; then
+            echo "::error::Branch '$BRANCH' fora do padrão exigido: feat/<nome>"
+            exit 1
+          fi
+          echo "Branch '$BRANCH' ok."
+
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Checagem de tipos e conteúdo
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # histórico completo, senão só varre o último commit
+
+      # Sem licença: gitleaks-action é grátis para repos de conta pessoal.
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

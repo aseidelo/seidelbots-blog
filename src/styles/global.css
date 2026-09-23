@@ -1,0 +1,169 @@
+@import "./tokens/fonts.css";
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/shape.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font: var(--type-intro);
+}
+
+a { color: inherit; }
+
+/* Caps and centers a section's content. The section itself stays full width,
+   so its background band and dividers reach the viewport edges while the text
+   stays aligned with every other page. */
+.column {
+  width: min(100%, var(--frame-max-width));
+  margin-inline: auto;
+  padding-inline: var(--gutter-page);
+}
+
+img { max-width: 100%; }
+
+/* Markdown mapping for post bodies — see tokens/typography.css header comment. */
+.prose {
+  font: var(--type-body);
+  color: var(--ink-body);
+}
+
+.prose > * + * { margin-top: var(--space-4); }
+
+.prose h1 { font: var(--type-display); letter-spacing: var(--type-display-track); }
+.prose h2 { font: var(--type-h2); letter-spacing: var(--type-h2-track); }
+.prose h3 { font: var(--type-h3); }
+.prose h1, .prose h2, .prose h3 { color: var(--ink); margin-top: var(--space-7); margin-bottom: 0; }
+.prose h1 + *, .prose h2 + *, .prose h3 + * { margin-top: var(--space-3); }
+
+.prose p { text-wrap: pretty; }
+
+.prose ul, .prose ol { padding-left: 22px; }
+.prose li + li { margin-top: 6px; }
+
+.prose blockquote {
+  margin: 0;
+  padding: var(--space-4);
+  border: var(--border-dashed);
+  border-radius: var(--radius-card);
+  background: var(--violet-tint);
+}
+.prose blockquote p { margin: 0; }
+
+.prose code {
+  font: var(--type-code);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* Astro's Shiki integration is told to emit `var(--astro-code-*)` colors
+   instead of hardcoded hex (theme: 'css-variables' in astro.config.mjs), so
+   we own the palette here — it inverts with the site's theme toggle like
+   everything else. Only keywords get an accent (violet); everything else
+   reads as body ink. */
+:root {
+  --astro-code-foreground: var(--ink-body);
+  --astro-code-background: var(--surface);
+  --astro-code-token-keyword: var(--violet);
+  --astro-code-token-comment: var(--ink-subtle);
+  --astro-code-token-string: var(--green);
+  --astro-code-token-string-expression: var(--green);
+  --astro-code-token-constant: var(--amber);
+  --astro-code-token-parameter: var(--ink-body);
+  --astro-code-token-function: var(--ink-body);
+  --astro-code-token-punctuation: var(--ink-body);
+  --astro-code-token-link: var(--ink-body);
+}
+
+/* Bare fallback (no JS): the pre itself carries the sticker treatment. Once
+   main.js wraps it (see below), .code-block takes over and this is muted. */
+.prose pre.astro-code {
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  border: var(--border);
+  border-radius: var(--radius-code);
+  box-shadow: var(--shadow-card);
+  font: var(--type-code) !important;
+}
+.prose pre.astro-code code {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+}
+
+/* Inserted client-side (src/scripts/code-blocks.js) around pre.astro-code,
+   matching the design template's "tools.py / copy" header treatment. */
+.prose .code-block {
+  border: var(--border);
+  border-radius: var(--radius-code);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.prose .code-block pre.astro-code {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.prose .code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--slab);
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: .06em;
+  color: #cfc9e0;
+}
+.prose .copy-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.prose .copy-btn:hover { color: #fdfbf6; }
+
+.prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: var(--border);
+  border-radius: var(--radius-code);
+  overflow: hidden;
+  font: 400 15px/1.5 var(--font-body);
+}
+.prose th {
+  text-align: left;
+  padding: 9px 12px;
+  font: var(--type-eyebrow);
+  letter-spacing: var(--type-tag-track);
+  text-transform: uppercase;
+  border-bottom: var(--border);
+  background: var(--violet-tint);
+}
+.prose td { padding: 9px 12px; border-bottom: var(--hairline); }
+
+.prose img {
+  border: var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.prose hr { border: none; border-top: var(--divider); }
+
+.prose .footnotes {
+  font: var(--type-meta);
+  color: var(--ink-subtle);
+}

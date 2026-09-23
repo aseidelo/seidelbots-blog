@@ -1,0 +1,226 @@
+---
+import "../styles/global.css";
+import { SITE, SOCIAL } from "../config";
+
+interface Props {
+  title: string;
+  description?: string;
+  active?: "home" | "writing" | "projects" | "about";
+}
+
+const { title, description = SITE.description, active } = Astro.props;
+const pageTitle = title === SITE.title ? SITE.title : `${title} · ${SITE.title}`;
+
+const navItem = (page: typeof active, accent: "amber" | "green") => ({
+  page,
+  accent,
+  isActive: page === active,
+});
+
+const nav = [
+  { href: "/", label: "Everything", ...navItem("home", "amber" as const) },
+  { href: "/writing/", label: "Writing", ...navItem("writing", "amber" as const) },
+  { href: "/projects/", label: "Projects", ...navItem("projects", "green" as const) },
+  { href: "/about/", label: "About", ...navItem("about", "amber" as const) },
+];
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{pageTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={new URL(Astro.url.pathname, SITE.url)} />
+  <link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script is:inline>
+    try {
+      var saved = localStorage.getItem("sb-theme");
+      if (saved === "light" || saved === "dark") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="column header-inner">
+      <a href="/" class="wordmark">Seidelbots</a>
+      <nav class="nav">
+        {nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={["pill", { active: item.isActive, amber: item.accent === "amber", green: item.accent === "green" }]}
+          >
+            {item.label}
+          </a>
+        ))}
+        <button id="theme-toggle" class="theme-toggle" title="Toggle theme" type="button">
+          <span id="theme-icon">&#9789;</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="frame">
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="column footer-inner">
+        <span>Seidelbots · markdown in, agents out</span>
+        <span class="links">
+          <a href="/rss.xml">RSS</a>
+          <a href={SOCIAL.github} target="_blank" rel="noopener">GitHub</a>
+          <a href={SOCIAL.email}>Mail</a>
+        </span>
+      </div>
+    </footer>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var btn = document.getElementById("theme-toggle");
+      var icon = document.getElementById("theme-icon");
+      function current() {
+        var attr = document.documentElement.getAttribute("data-theme");
+        if (attr) return attr;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      function paintIcon() {
+        icon.textContent = current() === "dark" ? "☀" : "☾";
+      }
+      btn.addEventListener("click", function () {
+        var next = current() === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("sb-theme", next); } catch (e) {}
+        paintIcon();
+      });
+      paintIcon();
+    })();
+  </script>
+
+  <script is:inline>
+    (function () {
+      // Wrap each Shiki code block in the shop's slab header (language + copy
+      // button) — done client-side because content-collection markdown
+      // renders through a pipeline that doesn't run custom rehype plugins.
+      document.querySelectorAll("pre.astro-code").forEach(function (pre) {
+        if (pre.closest(".code-block")) return;
+        var wrapper = document.createElement("div");
+        wrapper.className = "code-block";
+        var header = document.createElement("div");
+        header.className = "code-header";
+        var lang = document.createElement("span");
+        lang.textContent = pre.dataset.language || "text";
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "copy-btn";
+        btn.textContent = "copy";
+        header.append(lang, btn);
+        pre.replaceWith(wrapper);
+        wrapper.append(header, pre);
+      });
+
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest(".copy-btn");
+        if (!btn) return;
+        var pre = btn.closest(".code-block")?.querySelector("pre");
+        if (!pre || !navigator.clipboard) return;
+        navigator.clipboard.writeText(pre.innerText).then(function () {
+          var original = btn.textContent;
+          btn.textContent = "copied";
+          setTimeout(function () { btn.textContent = original; }, 1200);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
+
+<style>
+  /* Full width: every section inside caps its own content with .column, so
+     background bands and dividers reach the viewport edges. */
+  .frame {
+    min-height: 100vh;
+    background: var(--canvas);
+  }
+
+  .site-header {
+    border-bottom: var(--divider);
+    background: var(--canvas);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 16px;
+    flex-wrap: wrap;
+  }
+
+  .wordmark {
+    display: grid;
+    place-items: center;
+    height: 38px;
+    padding: 0 14px;
+    text-decoration: none;
+    background: var(--surface);
+    border: var(--border);
+    border-radius: var(--radius-logo);
+    box-shadow: var(--shadow-card);
+    font: 800 18px/1 var(--font-display);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .nav {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font: var(--type-nav);
+  }
+
+  .pill {
+    text-decoration: none;
+    padding: 7px 12px;
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    background: transparent;
+    color: var(--ink);
+  }
+  .pill.active.amber { border-color: var(--edge); background: var(--amber); color: var(--on-accent); box-shadow: var(--shadow-pill); }
+  .pill.active.green { border-color: var(--edge); background: var(--green); color: var(--on-accent); box-shadow: var(--shadow-pill); }
+
+  .theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: var(--border);
+    border-radius: var(--radius-logo);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .site-footer {
+    padding-block: 16px 40px;
+    border-top: var(--divider);
+    font: var(--type-meta);
+    color: var(--ink-subtle);
+  }
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .site-footer .links { display: flex; gap: 10px; align-items: center; }
+  .site-footer a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+</style>

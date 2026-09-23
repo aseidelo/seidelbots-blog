@@ -1,0 +1,77 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Slot from "../components/Slot.astro";
+import { NOW, SOCIAL } from "../config";
+---
+<BaseLayout title="About" active="about">
+  <div class="column wrap">
+    <div class="col">
+      <h1>Hi — I'm Seidel, and this is my workshop.</h1>
+      <p>
+        I build agentic applications: software that plans, calls tools, and gets something done
+        without me watching. Most of what I learn doing that ends up here as a post, and most of
+        what I finish ends up deployed on a subdomain.
+      </p>
+      <p>
+        The shop framing is a joke I decided to take seriously. A robot outfitter on a distant
+        planet, selling retrofits to passing ships, is a fair description of what this work feels
+        like: someone arrives with a vehicle, the vehicle needs a part it does not have yet, and
+        the interesting problem is the fitting.
+      </p>
+      <p>
+        Everything is written in markdown, versioned in git, and published with no tracking and
+        no newsletter popup. If something here is wrong, mail me and I'll fix it in public.
+      </p>
+
+      <div class="now">
+        <p class="now-label">Right now</p>
+        <ul>
+          {NOW.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+    </div>
+
+    <aside class="side">
+      <Slot spec="self-portrait as shopkeep, counter and shelves behind" height="200px" />
+      <div class="card">
+        <p class="eyebrow">Find me</p>
+        <div class="links">
+          <a href={SOCIAL.github} target="_blank" rel="noopener">&rarr; GitHub</a>
+          <a href={SOCIAL.email}>&rarr; Mail</a>
+          <a href="/rss.xml">&rarr; RSS</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap { display: grid; grid-template-columns: 1fr 240px; gap: var(--space-7); padding-block: 34px 30px; }
+  @media (max-width: 640px) { .wrap { grid-template-columns: 1fr; } }
+  h1 { margin: 0 0 16px; font: var(--type-title); letter-spacing: var(--type-display-track); max-width: 22ch; }
+  p { margin: 0 0 14px; max-width: var(--measure-prose); font: var(--type-body); color: var(--ink-body); text-wrap: pretty; }
+
+  .now {
+    margin-top: 22px;
+    max-width: var(--measure-prose);
+    border: var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    background: var(--violet-tint);
+    padding: 16px 18px;
+  }
+  .now-label {
+    margin: 0 0 10px;
+    font: var(--type-eyebrow);
+    letter-spacing: var(--type-eyebrow-track);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .now ul { margin: 0; padding-left: 20px; font: 400 15px/1.7 var(--font-body); color: var(--ink-body); }
+
+  .side { display: flex; flex-direction: column; gap: 16px; }
+  .card { border: var(--border); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow-card); padding: 14px 16px; }
+  .eyebrow { margin: 0 0 10px; font: var(--type-tag); letter-spacing: var(--type-eyebrow-track); text-transform: uppercase; color: var(--ink-subtle); }
+  .links { display: flex; flex-direction: column; gap: 7px; font: var(--type-toc); }
+  .links a { color: var(--ink); text-decoration: none; }
+</style>
