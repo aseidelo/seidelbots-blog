@@ -2,9 +2,9 @@
 // hardcode the domain, handles or contact details.
 export const SITE = {
   title: "Seidelbots",
-  tagline: "A little shop of parts for your agents.",
+  tagline: "On a distant planet, a little shop of parts for your agents.",
   description:
-    "Markdown blog about building agentic AI, plus a shelf of deployed projects, each on its own subdomain.",
+    "A blog about agentic AI, NLP, voice processing, and everything in between.",
   url: "https://seidelbots.com",
 };
 
