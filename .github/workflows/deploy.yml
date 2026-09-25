@@ -33,10 +33,19 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Two payloads in one artifact: the built site, and the markdown sources
+      # published alongside it. The deploy job never checks out the repo, so
+      # anything it needs has to travel as data in here.
+      - name: Empacotar
+        run: |
+          mkdir -p upload/static upload/writings
+          cp -r dist/. upload/static/
+          cp -r src/content/posts/. upload/writings/
+
       - uses: actions/upload-artifact@v7
         with:
-          name: dist
-          path: dist/
+          name: site
+          path: upload/
           retention-days: 7
           if-no-files-found: error
 
@@ -50,8 +59,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: dist
-          path: dist
+          name: site
+          path: upload
 
       - uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -62,7 +71,7 @@ jobs:
       # Só o que está em _astro/ tem hash no nome, então só isso pode ser imutável.
       - name: Sync dos assets com hash (cache longo)
         run: |
-          aws s3 sync dist/ "s3://${{ secrets.S3_BUCKET }}" \
+          aws s3 sync upload/static/ "s3://${{ secrets.S3_BUCKET }}/content/static" \
             --delete \
             --no-progress \
             --cache-control "public,max-age=31536000,immutable" \
@@ -72,11 +81,18 @@ jobs:
       # Todo o resto (HTML, feed, favicons) precisa poder mudar a qualquer momento.
       - name: Sync do HTML, feed e favicons (sempre revalida)
         run: |
-          aws s3 sync dist/ "s3://${{ secrets.S3_BUCKET }}" \
+          aws s3 sync upload/static/ "s3://${{ secrets.S3_BUCKET }}/content/static" \
             --delete \
             --no-progress \
             --cache-control "public,max-age=0,must-revalidate" \
             --exclude "_astro/*"
+
+      # Fora do Origin Path: o CDN não serve isto, é só a fonte publicada.
+      - name: Sync do markdown dos posts
+        run: |
+          aws s3 sync upload/writings/ "s3://${{ secrets.S3_BUCKET }}/content/writings" \
+            --delete \
+            --no-progress
 
       - name: Invalidar cache do CloudFront
         run: |
