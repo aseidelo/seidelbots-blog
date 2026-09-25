@@ -81,9 +81,24 @@ GitHub Actions, a cada push na `main` (`.github/workflows/deploy.yml`):
 build estático → `s3 sync` no bucket → invalidação do CloudFront.
 Também dá pra disparar na mão pela aba Actions (`workflow_dispatch`).
 
-O job que tem credencial AWS não executa código do repo — ele só recebe o `dist/`
-já pronto do job de build. A autenticação é via OIDC (sem chave de longa duração):
-a role só pode ser assumida por este repo, na branch `main`.
+O job que tem credencial AWS não executa código do repo — ele só recebe o
+artefato pronto do job de build. A autenticação é via OIDC (sem chave de longa
+duração): a role só pode ser assumida por este repo, na branch `main`.
+
+Layout do bucket:
+
+```
+s3://<bucket>/
+├── content/
+│   ├── static/    Origin Path do CloudFront — o site buildado
+│   └── writings/  markdown dos posts, publicado mas fora do alcance do CDN
+└── logs/
+    └── cloudfront/
+```
+
+O Origin Path faz o CloudFront prefixar toda requisição com `content/static`, então
+nada fora dali é alcançável pela web. O markdown em `content/writings/` é uma cópia
+publicada da fonte; quem alimenta o build continua sendo `src/content/posts/`.
 
 Cache: `_astro/*` tem hash no nome e vai com `max-age` de 1 ano (`immutable`);
 HTML, feed e favicons vão com `max-age=0, must-revalidate`.
