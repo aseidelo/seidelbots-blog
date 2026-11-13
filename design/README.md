@@ -11,5 +11,8 @@ Material de referência do Claude Design. Não entra no build do site: o deploy 
     de um JSON de resultados;
   - `human-validation.html` — página de revisão humana de exemplos de dataset (estática ou servida
     por um servidor local).
+- `templates/post-example/` — o post-modelo "How this shop works" (en e pt): mostra o frontmatter e
+  como cada elemento de markdown (títulos, citação, código, tabela) aparece no tema. A cópia publicada
+  fica em `src/content/posts/`.
 
 Os tokens em uso pelo site estão em `src/styles/tokens/`; os daqui são a cópia original.
