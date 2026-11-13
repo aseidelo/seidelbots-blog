@@ -1,0 +1,60 @@
+/* Seidelbots typography.
+   Two families, three jobs.
+
+   Syne        display + headings. Only 700 and 800. Always negative tracking.
+               Never used below 19px and never for running text.
+   Public Sans everything readable: body, deks, labels, buttons.
+   Monospace   machine strings only — subdomains, file names, code, stock codes.
+               System stack, so it matches the reader's own terminal.
+
+   Markdown mapping (the site is markdown-driven):
+   # -> --type-display   ## -> --type-h2   ### -> --type-h3
+   p -> --type-body      blockquote -> --type-body + violet-tint field
+   code/pre -> --type-code   footnotes -> --type-meta */
+
+:root {
+  --font-display: Syne, "Trebuchet MS", sans-serif;
+  --font-body:    "Public Sans", -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* display — Syne 800 */
+  --type-display:      800 38px/1.08 var(--font-display);
+  --type-display-track: -.025em;
+  --type-title:        800 32px/1.1 var(--font-display);   /* section pages */
+  --type-hero:         800 36px/1.1 var(--font-display);   /* home hero */
+
+  /* headings — Syne 700 */
+  --type-h2:           700 23px/1.25 var(--font-display);
+  --type-h2-track:     -.015em;
+  --type-h3:           700 20px/1.25 var(--font-display);
+  --type-card-title:   700 21px/1.25 var(--font-display);
+  --type-list-title:   700 19px/1.3  var(--font-display);  /* index rows */
+
+  /* reading — Public Sans 400 */
+  --type-body:         400 17px/1.7  var(--font-body);     /* post prose */
+  --type-intro:        400 16px/1.65 var(--font-body);     /* page intros */
+  --type-dek:          400 15px/1.55 var(--font-body);     /* card summaries */
+  --type-small:        400 14px/1.5  var(--font-body);     /* row summaries */
+
+  /* interface — Public Sans 600/700 */
+  --type-nav:          600 13px/1 var(--font-body);
+  --type-button:       700 13px/1 var(--font-body);
+  --type-button-sm:    700 12px/1 var(--font-body);
+  --type-toc:          500 14px/1.35 var(--font-body);
+
+  /* micro caps — always tracked out, always uppercase */
+  --type-tag:          700 10px/1 var(--font-body);
+  --type-tag-track:    .08em;
+  --type-eyebrow:      700 11px/1 var(--font-body);
+  --type-eyebrow-track: .12em;
+
+  /* machine */
+  --type-code:         400 13px/1.65 var(--font-mono);
+  --type-mono-meta:    500 12px/1 var(--font-mono);
+  --type-meta:         400 12px/1.5 var(--font-body);
+
+  /* measure */
+  --measure-prose:  68ch;
+  --measure-title:  24ch;
+  --measure-intro:  56ch;
+}
