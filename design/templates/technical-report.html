@@ -21,7 +21,7 @@
   - Blocks available: .tldr (key numbers), .figure (+ .slot placeholder),
     .table, .code (with copy), .callout (.note / .warn), .bars (chart),
     .refs, .changelog, BibTeX citation.
-  - Light/dark follows the reader's system; the ☾/☀ button overrides it.
+  - Light theme only: the page reads as a printed document.
   - Prints cleanly to PDF (sidebar and buttons are hidden).
 -->
 <html lang="en">
@@ -46,28 +46,6 @@
   --on-accent:#1d1a24; --on-accent-surface:#fdfbf6; --display-ink:#1d1a24;
   --code-key:oklch(.5 .16 258); --link:oklch(.5 .16 258);
 }
-:root[data-theme="dark"]{
-  --ink:#f2eff8; --ink-body:#ded7ec; --ink-muted:#b8afcd; --ink-subtle:#9c92b5;
-  --canvas:#262035; --surface:#332b47; --rule:#4e4468; --rule-strong:#6a5e88;
-  --edge:#0e0c14; --shadow-ink:#0e0c14; --slab:#0e0c14; --edge-dashed:#7a6ea0;
-  --violet:oklch(.68 .15 258); --violet-tint:#2e2745;
-  --amber:oklch(.86 .1 62); --amber-tint:#3b3253;
-  --green:oklch(.82 .13 148); --green-tint:#26382f;
-  --on-accent:#15131b; --on-accent-surface:#fdfbf6; --display-ink:#f7f4fc;
-  --code-key:oklch(.78 .12 258); --link:oklch(.8 .11 258);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --ink:#f2eff8; --ink-body:#ded7ec; --ink-muted:#b8afcd; --ink-subtle:#9c92b5;
-    --canvas:#262035; --surface:#332b47; --rule:#4e4468; --rule-strong:#6a5e88;
-    --edge:#0e0c14; --shadow-ink:#0e0c14; --slab:#0e0c14; --edge-dashed:#7a6ea0;
-    --violet:oklch(.68 .15 258); --violet-tint:#2e2745;
-    --amber:oklch(.86 .1 62); --amber-tint:#3b3253;
-    --green:oklch(.82 .13 148); --green-tint:#26382f;
-    --on-accent:#15131b; --on-accent-surface:#fdfbf6; --display-ink:#f7f4fc;
-    --code-key:oklch(.78 .12 258); --link:oklch(.8 .11 258);
-  }
-}
 :root{
   --font-display:Syne,"Trebuchet MS",sans-serif;
   --font-body:"Public Sans",-apple-system,"Segoe UI",sans-serif;
@@ -81,12 +59,13 @@
 
 /* ============ base ============ */
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{scroll-behavior:smooth;scroll-padding-top:20px}
 body{margin:0;background:var(--canvas);color:var(--ink);font:400 16px/1.65 var(--font-body);-webkit-font-smoothing:antialiased}
 a{color:var(--link);text-underline-offset:2px}
 code{font:400 .86em/1 var(--font-mono);padding:2px 5px;border-radius:5px;background:var(--violet-tint);color:var(--ink)}
 :focus-visible{outline:2px solid var(--violet);outline-offset:2px}
-.frame{max-width:900px;margin:0 auto;min-height:100vh;border-left:var(--divider);border-right:var(--divider);background:var(--canvas)}
+.frame{max-width:960px;margin:40px auto;border:var(--border);border-radius:4px;box-shadow:4px 4px 0 var(--shadow-ink);background:var(--surface)}
 
 /* micro type */
 .eyebrow{font:700 11px/1 var(--font-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-subtle)}
@@ -99,13 +78,12 @@ code{font:400 .86em/1 var(--font-mono);padding:2px 5px;border-radius:5px;backgro
 .btn:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--shadow-ink)}
 
 /* ============ header ============ */
-.site{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px var(--gutter);border-bottom:var(--divider);flex-wrap:wrap}
-.wordmark{display:grid;place-items:center;height:38px;padding:0 14px;text-decoration:none;background:var(--surface);border:var(--border);border-radius:var(--r-logo);box-shadow:var(--shadow-card);font:800 18px/1 var(--font-display);letter-spacing:-.02em;color:var(--ink)}
-.theme{display:grid;place-items:center;width:30px;height:30px;border:var(--border);border-radius:var(--r-logo);background:var(--surface);color:var(--ink);font-size:13px;cursor:pointer;padding:0}
+.doc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:22px var(--gutter) 0}
+.doc-top a{color:inherit;text-decoration:none}
+.doc-top .tag{font-size:9px;padding:4px 7px;border-width:1.5px}
 
 /* ============ title block ============ */
-.rule-top{height:6px;background:var(--violet)}
-.head{padding:30px var(--gutter) 26px;border-bottom:var(--divider)}
+.head{padding:18px var(--gutter) 26px;border-bottom:var(--divider)}
 .head .kicker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .head h1{margin:0 0 14px;font:800 38px/1.08 var(--font-display);letter-spacing:-.025em;color:var(--display-ink);max-width:24ch;text-wrap:balance}
 .head .dek{margin:0 0 22px;max-width:60ch;font:400 17px/1.6 var(--font-body);color:var(--ink-muted);text-wrap:pretty}
@@ -240,7 +218,7 @@ dialog .dlg-small{font-size:14px;color:var(--ink-muted);margin-top:-4px}
 /* ============ responsive ============ */
 @media (max-width:760px){
   :root{--gutter:16px}
-  .frame{border:0}
+  .frame{margin:0;border:0;border-radius:0;box-shadow:none}
   .head h1{font-size:30px}
   .meta{grid-template-columns:1fr 1fr}
   .meta div{border-right:var(--hairline)!important;border-top:var(--hairline)}
@@ -257,9 +235,10 @@ dialog .dlg-small{font-size:14px;color:var(--ink-muted);margin-top:-4px}
 
 /* ============ print ============ */
 @media print{
-  :root,:root[data-theme]{--canvas:#fff;--surface:#fff;--ink:#000;--ink-body:#111;--ink-muted:#333;--ink-subtle:#555;--edge:#000;--shadow-ink:#000;--display-ink:#000}
-  .theme,.head .actions,aside,.code button,dialog{display:none!important}
-  .frame{border:0;max-width:none}
+  :root{--canvas:#fff;--surface:#fff;--ink:#000;--ink-body:#111;--ink-muted:#333;--ink-subtle:#555;--edge:#000;--shadow-ink:#000;--display-ink:#000}
+  .head .actions,aside,.code button,dialog{display:none!important}
+  body{background:#fff}
+  .frame{border:0;box-shadow:none;margin:0;max-width:none}
   .body{grid-template-columns:1fr;padding-top:10px}
   .sec,figure,.table-wrap,.chart,.code{break-inside:avoid}
   a{color:inherit}
@@ -269,21 +248,14 @@ dialog .dlg-small{font-size:14px;color:var(--ink-muted);margin-top:-4px}
 <body>
 <div class="frame">
 
-<header class="site">
-  <a class="wordmark" href="https://seidelbots.com" title="seidelbots.com">Seidelbots</a>
-  <button class="theme" id="theme" type="button" aria-label="Toggle light or dark theme">☾</button>
-</header>
-
-<div class="rule-top" aria-hidden="true"></div>
-
 <!-- ===================== TITLE BLOCK ===================== -->
+<div class="doc-top">
+  <span class="mono"><a href="https://seidelbots.com">Seidelbots</a> · technical report · SB-TR-2026-03 · v1.1</span>
+  <!-- EDIT: status = "final" or "draft" -->
+  <span class="tag final">Final</span>
+</div>
+
 <section class="head">
-  <div class="kicker">
-    <span class="tag report">Technical report</span>
-    <!-- EDIT: status = "final" or "draft" -->
-    <span class="tag final">Final</span>
-    <span class="mono">SB-TR-2026-03 · v1.1</span>
-  </div>
   <!-- EDIT: title is a claim, not a question -->
   <h1>A retry budget beats unlimited retries for tool-calling agents</h1>
   <!-- EDIT: abstract in 2–3 sentences: what goes in, what comes out, the headline number -->
@@ -556,13 +528,6 @@ var REPORT = {
 })();
 
 (function(){
-  var root=document.documentElement, btn=document.getElementById('theme');
-  function current(){var t=root.getAttribute('data-theme');if(t)return t;return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}
-  function paint(){btn.textContent=current()==='dark'?'☀':'☾'}
-  try{var saved=localStorage.getItem('sb-theme');if(saved)root.setAttribute('data-theme',saved)}catch(e){}
-  paint();
-  btn.addEventListener('click',function(){var n=current()==='dark'?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('sb-theme',n)}catch(e){}paint()});
-
   // table of contents from section headings + scroll spy
   var toc=document.getElementById('toc'), secs=[].slice.call(document.querySelectorAll('.sec[id]')), links={};
   secs.forEach(function(s){var h=s.querySelector('h2');var t=h.cloneNode(true);var n=t.querySelector('.n');if(n)n.remove();
