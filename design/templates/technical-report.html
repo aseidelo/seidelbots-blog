@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<!--
+  Seidelbots · Technical report template  (v1.0)
+  ------------------------------------------------------------------
+  One self-contained file. Drop it in a repo as docs/report.html (or
+  serve it with GitHub Pages) and replace the example content.
+
+  Where it lives
+  - <owner>/<repo>/docs/reports/report_YYYYMMDD.html
+  - Set repo, commit and blog URL ONCE in the REPORT config inside the
+    <script> at the bottom. The meta strip, the Code popup, the
+    "Reproducing" snippet and the BibTeX entry all read from it.
+    If repo is left empty and the page is served from GitHub Pages
+    (<owner>.github.io/<repo>/…), the repo is detected from the URL.
+
+  Conventions
+  - Everything you edit is marked with an "EDIT:" comment.
+  - Sections are <section class="sec" id="..."> — the table of contents
+    on the right is built from their <h2> automatically.
+  - Figures/tables are numbered by hand (Figure 1, Table 1…).
+  - Blocks available: .tldr (key numbers), .figure (+ .slot placeholder),
+    .table, .code (with copy), .callout (.note / .warn), .bars (chart),
+    .refs, .changelog, BibTeX citation.
+  - Light theme only: the page reads as a printed document.
+  - Prints cleanly to PDF (sidebar and buttons are hidden).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- EDIT: title + description -->
+<title>Retry budgets for tool-calling agents · Seidelbots</title>
+<meta name="description" content="Technical report: how a per-task retry budget changes success rate and cost in tool-calling agents.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ Seidelbots tokens (from the design system) ============ */
+:root{
+  --ink:#1d1a24; --ink-body:#2c2839; --ink-muted:#4a4557; --ink-subtle:#6b6480;
+  --canvas:#fdfbf6; --surface:#ffffff; --rule:#ddd6e8; --rule-strong:#1d1a24;
+  --edge:#1d1a24; --shadow-ink:#1d1a24; --slab:#1d1a24; --edge-dashed:#a79fbb;
+  --violet:oklch(.58 .16 258); --violet-tint:oklch(.96 .02 258);
+  --amber:oklch(.88 .09 62); --amber-tint:#fff7e6;
+  --green:oklch(.84 .12 148); --green-tint:oklch(.97 .03 148);
+  --on-accent:#1d1a24; --on-accent-surface:#fdfbf6; --display-ink:#1d1a24;
+  --code-key:oklch(.5 .16 258); --link:oklch(.5 .16 258);
+}
+:root{
+  --font-display:Syne,"Trebuchet MS",sans-serif;
+  --font-body:"Public Sans",-apple-system,"Segoe UI",sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --border:2px solid var(--edge); --border-dashed:2px dashed var(--edge-dashed);
+  --divider:2px solid var(--rule-strong); --hairline:1px solid var(--rule);
+  --shadow-card:2px 2px 0 var(--shadow-ink); --shadow-pill:1px 1px 0 var(--shadow-ink);
+  --r-card:14px; --r-tile:10px; --r-code:12px; --r-logo:9px; --r-pill:999px;
+  --gutter:34px; --aside:210px;
+}
+
+/* ============ base ============ */
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;background:var(--canvas);color:var(--ink);font:400 16px/1.65 var(--font-body);-webkit-font-smoothing:antialiased}
+a{color:var(--link);text-underline-offset:2px}
+code{font:400 .86em/1 var(--font-mono);padding:2px 5px;border-radius:5px;background:var(--violet-tint);color:var(--ink)}
+:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.frame{max-width:960px;margin:40px auto;border:var(--border);border-radius:4px;box-shadow:4px 4px 0 var(--shadow-ink);background:var(--surface)}
+
+/* micro type */
+.eyebrow{font:700 11px/1 var(--font-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-subtle)}
+.tag{display:inline-block;font:700 10px/1 var(--font-body);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border:var(--border);border-radius:var(--r-pill);color:var(--on-accent);background:var(--surface)}
+.tag.report{background:var(--violet);color:#fff}
+.tag.final{background:var(--green)}
+.tag.draft{background:var(--amber)}
+.mono{font:500 12px/1.4 var(--font-mono);color:var(--ink-subtle)}
+.btn{display:inline-flex;align-items:center;gap:6px;font:700 13px/1 var(--font-body);color:var(--ink);text-decoration:none;padding:9px 13px;border:var(--border);border-radius:var(--r-pill);background:var(--surface);box-shadow:var(--shadow-pill);cursor:pointer}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--shadow-ink)}
+
+/* ============ header ============ */
+.doc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:22px var(--gutter) 0}
+.doc-top a{color:inherit;text-decoration:none}
+.doc-top .tag{font-size:9px;padding:4px 7px;border-width:1.5px}
+
+/* ============ title block ============ */
+.head{padding:18px var(--gutter) 26px;border-bottom:var(--divider)}
+.head .kicker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.head h1{margin:0 0 14px;font:800 38px/1.08 var(--font-display);letter-spacing:-.025em;color:var(--display-ink);max-width:24ch;text-wrap:balance}
+.head .dek{margin:0 0 22px;max-width:60ch;font:400 17px/1.6 var(--font-body);color:var(--ink-muted);text-wrap:pretty}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);border:var(--border);border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-card);overflow:hidden}
+.meta div{padding:12px 14px;border-right:var(--hairline);min-width:0}
+.meta div:nth-child(4n){border-right:0}
+.meta div:nth-child(n+5){border-top:var(--hairline)}
+.meta dt{margin:0 0 6px}
+.meta dd{margin:0;font:600 14px/1.35 var(--font-body);color:var(--ink);overflow-wrap:anywhere}
+.meta dd.mono{font:500 13px/1.35 var(--font-mono);color:var(--ink)}
+.meta a{color:var(--ink)}
+.head .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+
+/* ============ body grid ============ */
+.body{display:grid;grid-template-columns:minmax(0,1fr) var(--aside);gap:32px;padding:30px var(--gutter) 40px}
+article{min-width:0}
+.sec{margin:0 0 38px}
+.sec h2{display:flex;gap:10px;align-items:baseline;margin:0 0 12px;font:700 23px/1.25 var(--font-display);letter-spacing:-.015em;color:var(--display-ink)}
+.sec h2 .n{font:500 13px/1 var(--font-mono);color:var(--ink-subtle);letter-spacing:0}
+.sec h3{margin:22px 0 8px;font:700 19px/1.3 var(--font-display);letter-spacing:-.01em;color:var(--display-ink)}
+.sec p,.sec li{font:400 17px/1.7 var(--font-body);color:var(--ink-body);text-wrap:pretty}
+.sec p{margin:0 0 16px;max-width:68ch}
+.sec ul,.sec ol{margin:0 0 16px;padding-left:22px;max-width:66ch}
+.sec li{margin:0 0 4px}
+sup.fn{font:500 11px/0 var(--font-mono)}
+sup.fn a{color:var(--ink-subtle);text-decoration:none}
+
+/* key numbers */
+.tldr{border:var(--border);border-radius:var(--r-card);box-shadow:var(--shadow-card);background:var(--violet-tint);padding:16px;margin:0 0 30px}
+.tldr .eyebrow{margin:0 0 12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{border:var(--border);border-radius:var(--r-tile);background:var(--surface);padding:12px 14px}
+.stat b{display:block;font:800 30px/1 var(--font-display);letter-spacing:-.02em;color:var(--display-ink)}
+.stat span{display:block;margin-top:6px;font:400 13px/1.4 var(--font-body);color:var(--ink-muted)}
+.tldr ul{margin:14px 0 0;padding-left:20px}
+.tldr li{font:400 15px/1.55 var(--font-body);color:var(--ink-body);margin:0 0 3px}
+
+/* callouts */
+.callout{display:flex;gap:12px;border-radius:var(--r-card);padding:14px 16px;margin:0 0 18px}
+.callout p{margin:0;font:400 15px/1.6 var(--font-body);color:var(--ink-body)}
+.callout .tag{flex:none;align-self:flex-start}
+.callout.note{border:var(--border-dashed);background:var(--violet-tint)}
+.callout.warn{border:var(--border);background:var(--amber-tint);box-shadow:var(--shadow-card)}
+.callout.warn .tag{background:var(--amber)}
+
+/* figures */
+figure{margin:0 0 22px}
+.slot{border:var(--border);border-radius:var(--r-card);box-shadow:var(--shadow-card);background:repeating-linear-gradient(135deg,var(--surface) 0,var(--surface) 7px,var(--violet-tint) 7px,var(--violet-tint) 14px);min-height:200px;display:grid;place-items:center;text-align:center;padding:16px}
+.slot span{font:500 11px/1.6 var(--font-mono);color:var(--ink-subtle);background:var(--surface);padding:4px 8px;border-radius:6px}
+figure img{display:block;width:100%;height:auto;border:var(--border);border-radius:var(--r-card);box-shadow:var(--shadow-card);background:var(--surface)}
+figcaption{margin-top:10px;font:400 14px/1.5 var(--font-body);color:var(--ink-muted);max-width:68ch}
+figcaption b{color:var(--ink);font-weight:700}
+
+/* tables */
+.table-wrap{overflow-x:auto;margin:0 0 8px;border:var(--border);border-radius:var(--r-code);box-shadow:var(--shadow-card);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font:400 15px/1.45 var(--font-body);color:var(--ink-body)}
+th{text-align:left;padding:10px 12px;font:700 10px/1.2 var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--violet-tint);border-bottom:var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:var(--hairline)}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font:500 14px/1.45 var(--font-mono);font-variant-numeric:tabular-nums}
+th.num{font:700 10px/1.2 var(--font-body)}
+tr.best{background:var(--amber-tint)}
+tr.best td:first-child{font-weight:700;color:var(--ink)}
+.table-note{margin:0 0 22px;font:400 13px/1.5 var(--font-body);color:var(--ink-subtle)}
+.table-note b{color:var(--ink-muted)}
+
+/* bar chart (single series, horizontal) */
+.chart{border:var(--border);border-radius:var(--r-card);box-shadow:var(--shadow-card);background:var(--surface);padding:16px 16px 12px}
+.chart .title{margin:0 0 2px;font:700 15px/1.3 var(--font-body);color:var(--ink)}
+.chart .sub{margin:0 0 14px;font:400 13px/1.4 var(--font-body);color:var(--ink-subtle)}
+.bars{display:grid;grid-template-columns:150px 1fr 52px;gap:8px 12px;align-items:center}
+.bars .lbl{font:400 14px/1.3 var(--font-body);color:var(--ink-body)}
+.bars .track{position:relative;height:22px;border-left:1px solid var(--rule-strong)}
+.bars .bar{position:absolute;left:0;top:3px;bottom:3px;background:var(--violet);border-radius:0 4px 4px 0}
+.bars .bar.hi{background:var(--green)}
+.bars .row{display:contents}
+.bars .row:hover .bar{outline:2px solid var(--edge);outline-offset:0}
+.bars .val{font:500 13px/1 var(--font-mono);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.chart .legend{display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:var(--hairline);font:400 12px/1.3 var(--font-body);color:var(--ink-muted)}
+.chart .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.tip{position:fixed;pointer-events:none;z-index:10;padding:7px 9px;border:var(--border);border-radius:8px;background:var(--surface);box-shadow:var(--shadow-card);font:400 12px/1.4 var(--font-body);color:var(--ink);opacity:0;transition:opacity .1s}
+.tip b{font-family:var(--font-mono)}
+
+/* code */
+.code{border:var(--border);border-radius:var(--r-code);box-shadow:var(--shadow-card);overflow:hidden;margin:0 0 18px;background:var(--surface)}
+.code .bar-top{display:flex;justify-content:space-between;align-items:center;padding:7px 8px 7px 12px;background:var(--slab);font:600 11px/1 var(--font-mono);letter-spacing:.06em;color:#cfc9e0}
+.code button{font:600 11px/1 var(--font-mono);letter-spacing:.06em;color:#cfc9e0;background:transparent;border:1px solid #4e4468;border-radius:6px;padding:5px 8px;cursor:pointer}
+.code button:hover{color:#fff;border-color:#cfc9e0}
+.code pre{margin:0;padding:12px 14px;font:400 13px/1.65 var(--font-mono);color:var(--ink-body);overflow:auto}
+.code .c{color:var(--ink-subtle)}
+.code .k{color:var(--code-key)}
+
+/* references */
+.refs{list-style:none;padding:0!important;counter-reset:r}
+.refs li{position:relative;padding-left:36px!important;font:400 15px/1.55 var(--font-body)!important;margin:0 0 10px!important}
+.refs li::before{counter-increment:r;content:"[" counter(r) "]";position:absolute;left:0;top:1px;font:500 12px/1.5 var(--font-mono);color:var(--ink-subtle)}
+.refs li:target{background:var(--amber-tint);border-radius:6px}
+
+/* changelog */
+.changelog{border-top:var(--divider)}
+.changelog div{display:grid;grid-template-columns:70px 100px 1fr;gap:12px;padding:10px 0;border-bottom:var(--hairline);font:400 14px/1.5 var(--font-body);color:var(--ink-body)}
+.changelog .v{font:600 13px/1.5 var(--font-mono);color:var(--ink)}
+.changelog .d{font:400 13px/1.5 var(--font-mono);color:var(--ink-subtle)}
+
+/* ============ sidebar ============ */
+aside{display:flex;flex-direction:column;gap:16px}
+.sticky{position:sticky;top:20px;display:flex;flex-direction:column;gap:16px}
+.card{border:var(--border);border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-card);padding:14px}
+.card .eyebrow{margin:0 0 10px;font-size:10px}
+.toc{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none;counter-reset:t}
+.toc a{display:block;padding:4px 0 4px 10px;border-left:2px solid transparent;font:500 14px/1.35 var(--font-body);color:var(--ink-muted);text-decoration:none}
+.toc a:hover{color:var(--ink)}
+.toc a.on{color:var(--ink);border-left-color:var(--violet);font-weight:700}
+/* ============ code popup ============ */
+.btn-mono{font:600 12px/1 var(--font-mono)}
+.btn.primary{background:var(--green);color:var(--on-accent)}
+.btn.ghost{box-shadow:none}
+dialog{width:min(560px,calc(100vw - 32px));margin:auto;padding:20px;border:var(--border);border-radius:var(--r-card);background:var(--canvas);color:var(--ink);box-shadow:4px 4px 0 var(--shadow-ink)}
+dialog::backdrop{background:rgba(14,12,20,.55)}
+dialog h2{margin:12px 0 8px;font:700 23px/1.25 var(--font-display);letter-spacing:-.015em;color:var(--display-ink)}
+dialog p{margin:0 0 16px;font:400 15px/1.6 var(--font-body);color:var(--ink-body)}
+dialog p a{color:var(--ink);font-family:var(--font-mono);font-size:14px}
+dialog .dlg-small{font-size:14px;color:var(--ink-muted);margin-top:-4px}
+.dlg-head{display:flex;justify-content:space-between;align-items:center}
+.dlg-x{width:30px;height:30px;display:grid;place-items:center;padding:0;border:var(--border);border-radius:var(--r-logo);background:var(--surface);color:var(--ink);font-size:12px;cursor:pointer}
+.dlg-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ============ footer ============ */
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px var(--gutter) 26px;border-top:var(--divider);font:600 13px/1.4 var(--font-body);color:var(--ink-subtle)}
+.foot a{color:var(--ink);text-decoration:none}
+
+/* ============ responsive ============ */
+@media (max-width:760px){
+  :root{--gutter:16px}
+  .frame{margin:0;border:0;border-radius:0;box-shadow:none}
+  .head h1{font-size:30px}
+  .meta{grid-template-columns:1fr 1fr}
+  .meta div{border-right:var(--hairline)!important;border-top:var(--hairline)}
+  .meta div:nth-child(2n){border-right:0!important}
+  .meta div:nth-child(-n+2){border-top:0}
+  .body{grid-template-columns:1fr}
+  aside{order:-1}
+  .sticky{position:static}
+  .stats{grid-template-columns:1fr}
+  .bars{grid-template-columns:100px 1fr 46px}
+  .changelog div{grid-template-columns:60px 1fr}
+  .changelog .d{display:none}
+}
+
+/* ============ print ============ */
+@media print{
+  :root{--canvas:#fff;--surface:#fff;--ink:#000;--ink-body:#111;--ink-muted:#333;--ink-subtle:#555;--edge:#000;--shadow-ink:#000;--display-ink:#000}
+  .head .actions,aside,.code button,dialog{display:none!important}
+  body{background:#fff}
+  .frame{border:0;box-shadow:none;margin:0;max-width:none}
+  .body{grid-template-columns:1fr;padding-top:10px}
+  .sec,figure,.table-wrap,.chart,.code{break-inside:avoid}
+  a{color:inherit}
+}
+</style>
+</head>
+<body>
+<div class="frame">
+
+<!-- ===================== TITLE BLOCK ===================== -->
+<div class="doc-top">
+  <span class="mono"><a href="https://seidelbots.com">Seidelbots</a> · technical report · SB-TR-2026-03 · v1.1</span>
+  <!-- EDIT: status = "final" or "draft" -->
+  <span class="tag final">Final</span>
+</div>
+
+<section class="head">
+  <!-- EDIT: title is a claim, not a question -->
+  <h1>A retry budget beats unlimited retries for tool-calling agents</h1>
+  <!-- EDIT: abstract in 2–3 sentences: what goes in, what comes out, the headline number -->
+  <p class="dek">I gave a tool-calling agent a fixed per-task budget of retries instead of letting it retry each failing call up to five times. Task success rose from 71% to 84% on 400 held-out tasks while tool calls per task fell by a third.</p>
+
+  <dl class="meta">
+    <div><dt class="eyebrow">Author</dt><dd>Seidel</dd></div>
+    <div><dt class="eyebrow">Published</dt><dd>Nov 13, 2026</dd></div>
+    <div><dt class="eyebrow">Updated</dt><dd>Nov 20, 2026</dd></div>
+    <div><dt class="eyebrow">Read time</dt><dd>12 min</dd></div>
+    <div><dt class="eyebrow">Repository</dt><dd class="mono"><a data-bind="repoUrl:href" data-text="repo" href="#">owner/repo</a></dd></div>
+    <div><dt class="eyebrow">Commit</dt><dd class="mono"><a data-bind="treeUrl:href" data-text="short" href="#">commit</a></dd></div>
+    <div><dt class="eyebrow">Project</dt><dd class="mono">forge.seidelbots</dd></div>
+    <div><dt class="eyebrow">License</dt><dd>MIT · CC BY 4.0</dd></div>
+  </dl>
+
+  <div class="actions">
+    <button class="btn" type="button" id="open-code" aria-haspopup="dialog">Code at <span class="btn-mono" data-text="short">commit</span></button>
+    <a class="btn" data-bind="blog:href" href="#">Blog post →</a>
+    <button class="btn" type="button" onclick="window.print()">Save as PDF</button>
+  </div>
+</section>
+
+<div class="body">
+<article>
+
+  <!-- ===================== KEY NUMBERS ===================== -->
+  <div class="tldr">
+    <p class="eyebrow">At a glance</p>
+    <div class="stats">
+      <div class="stat"><b>84%</b><span>task success, up from 71%</span></div>
+      <div class="stat"><b>−34%</b><span>tool calls per task</span></div>
+      <div class="stat"><b>400</b><span>held-out tasks, 3 seeds</span></div>
+    </div>
+    <ul>
+      <li>Most extra retries were spent repeating a call that could not succeed.</li>
+      <li>A shared budget pushes the agent to change plan instead of hammering one tool.</li>
+      <li>The gain disappears when error messages are untyped (Section 5.2).</li>
+    </ul>
+  </div>
+
+  <!-- ===================== SECTIONS ===================== -->
+  <section class="sec" id="motivation">
+    <h2><span class="n">1</span>Motivation</h2>
+    <p>Retry logic is usually written once, per tool, and forgotten. Each tool wrapper retries up to five times with backoff. That is reasonable for a flaky network and wasteful for a call that fails because the arguments are wrong: the agent sees the same error five times and still has to change its plan afterwards.</p>
+    <p>This report asks one question. If the retries are pooled into a single budget for the whole task, does the agent spend them better?<sup class="fn"><a href="#ref-1">1</a></sup></p>
+  </section>
+
+  <section class="sec" id="method">
+    <h2><span class="n">2</span>Method</h2>
+    <p>The agent gets a budget <code>B</code> of failed calls per task. Every failed tool call, whatever the tool, spends one unit. When the budget reaches zero the agent must answer with what it has, or stop and explain what is missing.</p>
+    <figure>
+      <!-- EDIT: replace .slot with <img src="figures/fig1.png" alt="…"> -->
+      <div class="slot" role="img" aria-label="Placeholder for figure 1"><span>FIGURE 1 · agent loop with the shared budget counter</span></div>
+      <figcaption><b>Figure 1.</b> The budget sits outside the tool wrappers. Wrappers report failures to it instead of retrying on their own.</figcaption>
+    </figure>
+    <h3>2.1 What counts as a failure</h3>
+    <ul>
+      <li>A tool returns a typed error (validation, not found, permission).</li>
+      <li>A tool times out after 20 s.</li>
+      <li>The model emits a call that does not parse.</li>
+    </ul>
+    <div class="callout note">
+      <span class="tag">Note</span>
+      <p>Network errors with a <code>Retry-After</code> header are retried by the transport and never reach the budget.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="setup">
+    <h2><span class="n">3</span>Experimental setup</h2>
+    <p>All runs use the same model, temperature 0, and three seeds. Tasks come from the internal <code>forge-tasks-v2</code> set and are split once before any tuning.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Model</td><td class="num">model-x-2026-09</td></tr>
+          <tr><td>Tools available</td><td class="num">14</td></tr>
+          <tr><td>Held-out tasks</td><td class="num">400</td></tr>
+          <tr><td>Seeds</td><td class="num">3</td></tr>
+          <tr><td>Max steps per task</td><td class="num">40</td></tr>
+          <tr><td>Hardware</td><td class="num">1 × A100 40GB</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note"><b>Table 1.</b> Fixed settings for every run in this report.</p>
+  </section>
+
+  <section class="sec" id="results">
+    <h2><span class="n">4</span>Results</h2>
+    <p>A budget of 6 gives the best success rate. Smaller budgets cut off tasks that legitimately need a second attempt; larger ones drift back toward the per-tool baseline.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Configuration</th><th class="num">Success</th><th class="num">± std</th><th class="num">Calls / task</th><th class="num">Cost / task</th></tr></thead>
+        <tbody>
+          <tr><td>Per-tool retries ×5 (baseline)</td><td class="num">71.0%</td><td class="num">1.2</td><td class="num">18.4</td><td class="num">$0.091</td></tr>
+          <tr><td>Budget B = 3</td><td class="num">78.5%</td><td class="num">0.9</td><td class="num">11.2</td><td class="num">$0.058</td></tr>
+          <tr class="best"><td>Budget B = 6</td><td class="num">84.3%</td><td class="num">0.7</td><td class="num">12.1</td><td class="num">$0.062</td></tr>
+          <tr><td>Budget B = 12</td><td class="num">80.1%</td><td class="num">1.1</td><td class="num">15.9</td><td class="num">$0.079</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note"><b>Table 2.</b> Mean over 3 seeds on 400 tasks. Highlighted row is the configuration I ship.</p>
+
+    <figure>
+      <!-- EDIT: one row per configuration; data-v is the value, max is set on .bars -->
+      <div class="chart">
+        <p class="title">Task success by retry policy</p>
+        <p class="sub">Percent of 400 tasks solved, mean of 3 seeds</p>
+        <div class="bars" data-max="100" data-unit="%" role="img" aria-label="Bar chart of task success: baseline 71.0%, B=3 78.5%, B=6 84.3%, B=12 80.1%">
+          <div class="row"><span class="lbl">Baseline ×5</span><span class="track"><span class="bar" data-v="71.0"></span></span><span class="val">71.0%</span></div>
+          <div class="row"><span class="lbl">B = 3</span><span class="track"><span class="bar" data-v="78.5"></span></span><span class="val">78.5%</span></div>
+          <div class="row"><span class="lbl">B = 6</span><span class="track"><span class="bar hi" data-v="84.3"></span></span><span class="val">84.3%</span></div>
+          <div class="row"><span class="lbl">B = 12</span><span class="track"><span class="bar" data-v="80.1"></span></span><span class="val">80.1%</span></div>
+        </div>
+        <div class="legend"><span><i style="background:var(--violet)"></i>Tested</span><span><i style="background:var(--green)"></i>Shipped</span></div>
+      </div>
+      <figcaption><b>Figure 2.</b> Same data as Table 2. Axis starts at zero.</figcaption>
+    </figure>
+  </section>
+
+  <section class="sec" id="analysis">
+    <h2><span class="n">5</span>Analysis</h2>
+    <h3>5.1 Where the retries went</h3>
+    <p>In the baseline, 62% of retries repeated a call with identical arguments. Under the budget that share fell to 9%: after one failure the agent usually switched tools or asked a narrower question.</p>
+    <h3>5.2 When it does not help</h3>
+    <p>With untyped errors (a raw stack trace instead of <code>NotFound</code>), success under B = 6 was 72.4%, within noise of the baseline. The budget only helps if the agent can tell why a call failed.</p>
+  </section>
+
+  <section class="sec" id="limitations">
+    <h2><span class="n">6</span>Limitations</h2>
+    <div class="callout warn">
+      <span class="tag">Caveat</span>
+      <p>One model, one task set. The best budget is likely task-dependent; treat B = 6 as a starting point, not a constant.</p>
+    </div>
+    <ul>
+      <li>Tasks are English-only and short (median 9 steps).</li>
+      <li>Cost assumes list prices in November 2026.</li>
+    </ul>
+  </section>
+
+  <section class="sec" id="reproduce">
+    <h2><span class="n">7</span>Reproducing</h2>
+    <p>Everything in Table 2 and Figure 2 runs from one script. A full sweep takes about 3 hours on the hardware in Table 1.</p>
+    <div class="code">
+      <div class="bar-top"><span>terminal</span><button type="button" data-copy>copy</button></div>
+<pre><span class="c"># clone at the commit this report was written against</span>
+git clone <span data-text="cloneUrl"></span>
+<span class="k">cd</span> <span data-text="name"></span> && git checkout <span data-text="commit"></span>
+pip install -r requirements.txt
+
+<span class="c"># run the sweep and write results/table2.csv</span>
+python run_sweep.py --budgets 3 6 12 --seeds 3</pre>
+    </div>
+    <div class="code">
+      <div class="bar-top"><span>budget.py</span><button type="button" data-copy>copy</button></div>
+<pre><span class="k">class</span> RetryBudget:
+    <span class="k">def</span> __init__(self, total: int = 6):
+        self.left = total
+
+    <span class="k">def</span> spend(self) -&gt; bool:
+        <span class="c"># returns False when the agent must stop retrying</span>
+        self.left -= 1
+        <span class="k">return</span> self.left &gt;= 0</pre>
+    </div>
+  </section>
+
+  <section class="sec" id="references">
+    <h2><span class="n">8</span>References</h2>
+    <ol class="refs">
+      <li id="ref-1">Seidel. <i>Tool-use is the drivetrain, not the engine.</i> Seidelbots, 2026. <a href="https://seidelbots.com/writing/tool-use">seidelbots.com/writing/tool-use</a></li>
+      <li id="ref-2">Author, A. and Author, B. <i>Title of the paper.</i> Venue, 2025. <a href="https://arxiv.org/">arxiv.org/abs/0000.00000</a></li>
+    </ol>
+  </section>
+
+  <section class="sec" id="cite">
+    <h2><span class="n">9</span>Citing this report</h2>
+    <div class="code">
+      <div class="bar-top"><span>bibtex</span><button type="button" data-copy>copy</button></div>
+<pre>@techreport{seidel2026retry,
+  title       = {A retry budget beats unlimited retries for tool-calling agents},
+  author      = {Seidel},
+  institution = {Seidelbots},
+  number      = {SB-TR-2026-03},
+  year        = {2026},
+  url         = {<span data-text="repoUrl"></span>},
+  note        = {Code at commit <span data-text="short"></span>}
+}</pre>
+    </div>
+  </section>
+
+  <section class="sec" id="changelog">
+    <h2><span class="n">10</span>Changelog</h2>
+    <div class="changelog">
+      <div><span class="v">v1.1</span><span class="d">2026-11-20</span><span>Added Section 5.2 on untyped errors.</span></div>
+      <div><span class="v">v1.0</span><span class="d">2026-11-13</span><span>First release.</span></div>
+    </div>
+  </section>
+
+</article>
+
+<!-- ===================== SIDEBAR ===================== -->
+<aside>
+  <div class="sticky">
+    <nav class="card" aria-label="On this page">
+      <p class="eyebrow">On this page</p>
+      <ul class="toc" id="toc"></ul>
+    </nav>
+  </div>
+</aside>
+</div>
+
+<footer class="foot">
+  <span>Seidelbots · technical report SB-TR-2026-03</span>
+  <span><a href="https://seidelbots.com">seidelbots.com</a> · <a data-bind="repoUrl:href" href="#">GitHub</a></span>
+</footer>
+
+</div>
+
+<!-- ===================== CODE POPUP (filled from REPORT config) ===================== -->
+<dialog id="code-dialog" aria-labelledby="code-title">
+  <div class="dlg-head">
+    <span class="tag report">Code</span>
+    <button type="button" class="dlg-x" id="close-code" aria-label="Close">✕</button>
+  </div>
+  <h2 id="code-title">Get the code this report used</h2>
+  <p>This report references the code at commit <code data-text="short">commit</code> of <a data-bind="repoUrl:href" data-text="repo" href="#">owner/repo</a>. The default branch may have moved on since. Clone the repo and check out that commit to run exactly what is described here.</p>
+  <div class="code">
+    <div class="bar-top"><span>terminal</span><button type="button" data-copy>copy</button></div>
+<pre>git clone <span data-text="cloneUrl"></span>
+<span class="k">cd</span> <span data-text="name"></span>
+git checkout <span data-text="commit"></span></pre>
+  </div>
+  <p class="dlg-small">Then follow the README at that commit for setup and run instructions.</p>
+  <div class="dlg-actions">
+    <a class="btn" data-bind="treeUrl:href" href="#">Browse README at <span class="btn-mono" data-text="short"></span> →</a>
+    <a class="btn ghost" data-bind="zipUrl:href" href="#">Download .zip</a>
+  </div>
+</dialog>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+/* ================= EDIT: report config =================
+   repo   "owner/name". Leave "" to detect it from a GitHub Pages URL.
+   commit the full or short SHA the report was written against.
+   blog   the Seidelbots post that explains this project.          */
+var REPORT = {
+  repo:   "aseidelo/retry-budget",
+  commit: "a3f9c21",
+  blog:   "https://seidelbots.com/writing/retry-budgets"
+};
+
+(function(){
+  // ---- fill every [data-text] / [data-bind] from REPORT ----
+  var repo=REPORT.repo, m=location.hostname.match(/^([^.]+)\.github\.io$/i);
+  if(!repo && m){var seg=location.pathname.split('/').filter(Boolean)[0];if(seg)repo=m[1]+'/'+seg}
+  repo=repo||'owner/repo';
+  var gh='https://github.com/'+repo, c=REPORT.commit||'main';
+  var v={repo:repo,name:repo.split('/')[1],commit:c,short:c.slice(0,7),
+         repoUrl:gh,cloneUrl:gh+'.git',treeUrl:gh+'/tree/'+c,zipUrl:gh+'/archive/'+c+'.zip',blog:REPORT.blog||'https://seidelbots.com'};
+  document.querySelectorAll('[data-text]').forEach(function(el){el.textContent=v[el.dataset.text]});
+  document.querySelectorAll('[data-bind]').forEach(function(el){var p=el.dataset.bind.split(':');el.setAttribute(p[1],v[p[0]])});
+
+  // ---- code popup ----
+  var dlg=document.getElementById('code-dialog');
+  document.getElementById('open-code').addEventListener('click',function(){if(dlg.showModal)dlg.showModal();else location.href=v.treeUrl});
+  document.getElementById('close-code').addEventListener('click',function(){dlg.close()});
+  dlg.addEventListener('click',function(e){var r=dlg.getBoundingClientRect();
+    if(e.target===dlg&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))dlg.close()});
+})();
+
+(function(){
+  // table of contents from section headings + scroll spy
+  var toc=document.getElementById('toc'), secs=[].slice.call(document.querySelectorAll('.sec[id]')), links={};
+  secs.forEach(function(s){var h=s.querySelector('h2');var t=h.cloneNode(true);var n=t.querySelector('.n');if(n)n.remove();
+    var li=document.createElement('li'),a=document.createElement('a');a.href='#'+s.id;a.textContent=t.textContent.trim();li.appendChild(a);toc.appendChild(li);links[s.id]=a});
+  if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){for(var k in links)links[k].classList.remove('on');links[e.target.id].classList.add('on')}})},{rootMargin:'-10% 0px -75% 0px'});secs.forEach(function(s){io.observe(s)})}
+
+  // copy buttons
+  document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){
+    var txt=b.closest('.code').querySelector('pre').innerText;
+    var done=function(){b.textContent='copied';setTimeout(function(){b.textContent='copy'},1400)};
+    if(navigator.clipboard)navigator.clipboard.writeText(txt).then(done,function(){});})});
+
+  // bar chart widths + hover tooltip
+  var tip=document.getElementById('tip');
+  document.querySelectorAll('.bars').forEach(function(c){var max=+c.dataset.max||100,u=c.dataset.unit||'';
+    c.querySelectorAll('.row').forEach(function(r){var bar=r.querySelector('.bar'),v=+bar.dataset.v;bar.style.width=(v/max*100)+'%';
+      r.querySelector('.track').addEventListener('mousemove',function(e){tip.innerHTML=r.querySelector('.lbl').textContent+' · <b>'+v+u+'</b>';tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY-34)+'px';tip.style.opacity=1});
+      r.querySelector('.track').addEventListener('mouseleave',function(){tip.style.opacity=0})})});
+})();
+</script>
+</body>
+</html>

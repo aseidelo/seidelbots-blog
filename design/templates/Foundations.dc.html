@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="stylesheet" href="styles.css">
+<style>body{margin:0;background:#f0eee9}a{color:oklch(.5 .16 258)}a:hover{color:oklch(.4 .16 258)}</style></helmet>
+
+<div data-theme="light" style="max-width:960px;margin:0 auto;padding:44px 28px 72px;font:var(--type-intro);color:var(--ink);background:var(--canvas)">
+  <p style="margin:0 0 6px;font:var(--type-eyebrow);letter-spacing:var(--type-eyebrow-track);text-transform:uppercase;color:var(--ink-subtle)">Seidelbots · foundations</p>
+  <h1 style="margin:0 0 10px;font:var(--type-display);letter-spacing:var(--type-display-track)">Type and color</h1>
+  <p style="margin:0 0 40px;max-width:var(--measure-intro);font:var(--type-intro);color:var(--ink-muted)">Everything on this page reads from <code style="font:var(--type-code)">styles.css</code>. Edit a token there and this specimen changes with it.</p>
+
+  <h2 style="margin:0 0 4px;font:var(--type-h2);letter-spacing:var(--type-h2-track)">Display — Syne 800</h2>
+  <p style="margin:0 0 18px;font:var(--type-small);color:var(--ink-subtle)">Short and loud only. Negative tracking always. Never below 19px, never for running text.</p>
+  <div style="display:flex;flex-direction:column;gap:14px;border:var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);background:var(--surface);padding:20px 22px;margin:0 0 32px">
+    <div style="display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:baseline;border-bottom:var(--hairline);padding-bottom:12px">
+      <span style="font:var(--type-display);letter-spacing:var(--type-display-track)">Post title</span>
+      <span style="font:var(--type-mono-meta);color:var(--ink-subtle);text-align:right">--type-display<br>38/1.08 · 800 · -.025em</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:baseline;border-bottom:var(--hairline);padding-bottom:12px">
+      <span style="font:var(--type-hero);letter-spacing:var(--type-display-track)">Home hero line</span>
+      <span style="font:var(--type-mono-meta);color:var(--ink-subtle);text-align:right">--type-hero<br>36/1.1 · 800</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:baseline">
+      <span style="font:var(--type-title);letter-spacing:var(--type-display-track)">Writing</span>
+      <span style="font:var(--type-mono-meta);color:var(--ink-subtle);text-align:right">--type-title<br>32/1.1 · 800</span>
+    </div>
+  </div>
+
+  <h2 style="margin:0 0 4px;font:var(--type-h2);letter-spacing:var(--type-h2-track)">Headings — Syne 700</h2>
+  <p style="margin:0 0 18px;font:var(--type-small);color:var(--ink-subtle)">Markdown <code style="font:var(--type-code)">##</code> and <code style="font:var(--type-code)">###</code>, card titles, index rows.</p>
+  <div style="display:flex;flex-direction:column;gap:14px;border:var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);background:var(--surface);padding:20px 22px;margin:0 0 32px">
+    <div style="display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:baseline;border-bottom:var(--hairline);padding-bottom:12px"><span style="font:var(--type-h2);letter-spacing:var(--type-h2-track)">Three fixes, in order</span><span style="font:var(--type-mono-meta);color:var(--ink-subtle);text-align:right">--type-h2 · 23/1.25</span></div>
+    <div style="display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:baseline;border-bottom:var(--hairline);padding-bottom:12px"><span style="font:var(--type-card-title)">Receipts in, ledger out</span><span style="font:var(--type-mono-meta);color:var(--ink-subtle);text-align:right">--type-card-title · 21/1.25</span></div>
+    <div style="display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:baseline;border-bottom:var(--hairline);padding-bottom:12px"><span style="font:var(--type-h3)">Ledger</span><span style="font:var(--type-mono-meta);color:var(--ink-subtle);text-align:right">--type-h3 · 20/1.25</span></div>
+    <div style="display:grid;grid-template-columns:1fr 190px;gap:20px;align-items:baseline"><span style="font:var(--type-list-title)">Evals before eloquence</span><span style="font:var(--type-mono-meta);color:var(--ink-subtle);text-align:right">--type-list-title · 19/1.3</span></div>
+  </div>
+
+  <h2 style="margin:0 0 4px;font:var(--type-h2);letter-spacing:var(--type-h2-track)">Reading — Public Sans</h2>
+  <p style="margin:0 0 18px;font:var(--type-small);color:var(--ink-subtle)">Body sets at 17/1.7 on a 68ch measure. Everything a person actually reads is in this family.</p>
+  <div style="border:var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);background:var(--surface);padding:20px 22px;margin:0 0 32px">
+    <p style="margin:0 0 6px;font:var(--type-body);color:var(--ink-body);max-width:var(--measure-prose);text-wrap:pretty">A bigger model is a bigger engine. It does nothing for you until something transfers that power to the ground. In practice the transfer layer is tool-use.</p>
+    <p style="margin:0 0 16px;font:var(--type-mono-meta);color:var(--ink-subtle)">--type-body · 17/1.7 · 400</p>
+    <p style="margin:0 0 6px;font:var(--type-intro);color:var(--ink-muted);max-width:var(--measure-intro)">Twelve posts on building agents that survive contact with real users.</p>
+    <p style="margin:0 0 16px;font:var(--type-mono-meta);color:var(--ink-subtle)">--type-intro · 16/1.65</p>
+    <p style="margin:0 0 6px;font:var(--type-dek);color:var(--ink-muted)">An agent that matches receipts against a bank export.</p>
+    <p style="margin:0 0 16px;font:var(--type-mono-meta);color:var(--ink-subtle)">--type-dek · 15/1.55</p>
+    <p style="margin:0 0 6px;font:var(--type-small);color:var(--ink-muted)">Capability jumps come from the interface, not the weights.</p>
+    <p style="margin:0;font:var(--type-mono-meta);color:var(--ink-subtle)">--type-small · 14/1.5</p>
+  </div>
+
+  <h2 style="margin:0 0 4px;font:var(--type-h2);letter-spacing:var(--type-h2-track)">Interface and micro type</h2>
+  <p style="margin:0 0 18px;font:var(--type-small);color:var(--ink-subtle)">Micro labels are uppercase and tracked out. Monospace is reserved for machine strings.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start;border:var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);background:var(--surface);padding:20px 22px;margin:0 0 32px">
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <span style="font:var(--type-tag);letter-spacing:var(--type-tag-track);text-transform:uppercase;padding:5px 8px;border:var(--border);border-radius:var(--radius-pill);background:var(--amber);color:var(--on-accent)">Essay</span>
+      <span style="font:var(--type-mono-meta);color:var(--ink-subtle)">--type-tag · 10 · .08em</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <span style="font:var(--type-eyebrow);letter-spacing:var(--type-eyebrow-track);text-transform:uppercase;color:var(--ink-subtle)">September 2026</span>
+      <span style="font:var(--type-mono-meta);color:var(--ink-subtle)">--type-eyebrow · 11 · .12em</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <span style="font:var(--type-button);padding:9px 13px;border:var(--border);border-radius:var(--radius-pill);background:var(--surface);box-shadow:var(--shadow-pill);color:var(--ink)">Open →</span>
+      <span style="font:var(--type-mono-meta);color:var(--ink-subtle)">--type-button · 13 · 700</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <span style="font:var(--type-mono-meta);color:var(--ink-subtle)">ledger.seidelbots</span>
+      <span style="font:var(--type-mono-meta);color:var(--ink-subtle)">--type-mono-meta · 12</span>
+    </div>
+  </div>
+
+  <h2 style="margin:0 0 4px;font:var(--type-h2);letter-spacing:var(--type-h2-track)">Light palette</h2>
+  <p style="margin:0 0 18px;font:var(--type-small);color:var(--ink-subtle)">One ink draws every border, shadow and headline. Accents are backgrounds; text on them is always ink.</p>
+  <div style="border:var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);background:var(--surface);padding:20px 22px;margin:0 0 18px">
+    <p style="margin:0 0 12px;font:var(--type-eyebrow);letter-spacing:var(--type-eyebrow-track);text-transform:uppercase;color:var(--ink-subtle)">Ink and ground</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 22px">
+      <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:#1d1a24"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--ink<br>#1d1a24</p></div>
+      <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:#4a4557"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--ink-muted<br>#4a4557</p></div>
+      <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:#6b6480"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--ink-subtle<br>#6b6480</p></div>
+      <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:#fdfbf6"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--canvas<br>#fdfbf6</p></div>
+    </div>
+    <p style="margin:0 0 12px;font:var(--type-eyebrow);letter-spacing:var(--type-eyebrow-track);text-transform:uppercase;color:var(--ink-subtle)">Accents and tints</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:oklch(.58 .16 258)"></div><div style="height:26px;border:var(--border);border-top:0;border-radius:0 0 var(--radius-tile) var(--radius-tile);background:oklch(.96 .02 258);margin-top:-2px"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--violet · identity<br>oklch(.58 .16 258)</p></div>
+      <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:oklch(.88 .09 62)"></div><div style="height:26px;border:var(--border);border-top:0;border-radius:0 0 var(--radius-tile) var(--radius-tile);background:#fff7e6;margin-top:-2px"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--amber · writing<br>oklch(.88 .09 62)</p></div>
+      <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:oklch(.84 .12 148)"></div><div style="height:26px;border:var(--border);border-top:0;border-radius:0 0 var(--radius-tile) var(--radius-tile);background:oklch(.97 .03 148);margin-top:-2px"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--green · shipped<br>oklch(.84 .12 148)</p></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;margin:0 0 34px;padding:14px 16px;border:var(--border-dashed);border-radius:var(--radius-card);background:var(--violet-tint)">
+    <span style="font:var(--type-tag);letter-spacing:var(--type-tag-track);text-transform:uppercase;padding:5px 8px;border:var(--border);border-radius:var(--radius-pill);background:var(--green);color:var(--on-accent)">Live</span>
+    <p style="margin:0;font:var(--type-small);color:var(--ink-muted)">Tints are the only large color fields. Cards themselves stay surface-colored.</p>
+  </div>
+
+  <h2 style="margin:0 0 4px;font:var(--type-h2);letter-spacing:var(--type-h2-track)">Dark palette</h2>
+  <p style="margin:0 0 18px;font:var(--type-small);color:var(--ink-subtle)">Applied with <code style="font:var(--type-code)">data-theme="dark"</code>. The ground lifts to a mid plum so the same near-black ink (<code style="font:var(--type-code)">--edge</code> and <code style="font:var(--type-code)">--shadow-ink</code>, #0e0c14) still reads as a border and an offset shadow. Accents brighten so ink-on-accent stays legible.</p>
+  <div data-theme="dark" style="border:2px solid #6a5e88;border-radius:var(--radius-card);background:#262035;padding:22px;color:var(--ink)">
+    <div style="border:var(--border);border-radius:var(--radius-card);box-shadow:var(--shadow-card);background:var(--surface);padding:20px 22px">
+      <p style="margin:0 0 12px;font:var(--type-eyebrow);letter-spacing:var(--type-eyebrow-track);text-transform:uppercase;color:var(--ink-subtle)">Ink and ground</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 22px">
+        <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:#f2eff8"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--ink<br>#f2eff8</p></div>
+        <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:#b8afcd"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--ink-muted<br>#b8afcd</p></div>
+        <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:#262035"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--canvas<br>#262035</p></div>
+        <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:#332b47"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--surface<br>#332b47</p></div>
+      </div>
+      <p style="margin:0 0 12px;font:var(--type-eyebrow);letter-spacing:var(--type-eyebrow-track);text-transform:uppercase;color:var(--ink-subtle)">Accents and tints</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 20px">
+        <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:oklch(.68 .15 258)"></div><div style="height:26px;border:var(--border);border-top:0;border-radius:0 0 var(--radius-tile) var(--radius-tile);background:#2e2745;margin-top:-2px"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--violet<br>oklch(.68 .15 258)</p></div>
+        <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:oklch(.86 .1 62)"></div><div style="height:26px;border:var(--border);border-top:0;border-radius:0 0 var(--radius-tile) var(--radius-tile);background:#3b3253;margin-top:-2px"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--amber<br>oklch(.86 .1 62)</p></div>
+        <div><div style="height:56px;border:var(--border);border-radius:var(--radius-tile);background:oklch(.82 .13 148)"></div><div style="height:26px;border:var(--border);border-top:0;border-radius:0 0 var(--radius-tile) var(--radius-tile);background:#26382f;margin-top:-2px"></div><p style="margin:7px 0 0;font:var(--type-mono-meta);color:var(--ink-subtle)">--green<br>oklch(.82 .13 148)</p></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span style="font:var(--type-tag);letter-spacing:var(--type-tag-track);text-transform:uppercase;padding:5px 8px;border:var(--border);border-radius:var(--radius-pill);background:var(--amber);color:var(--on-accent)">Essay</span>
+        <span style="font:var(--type-tag);letter-spacing:var(--type-tag-track);text-transform:uppercase;padding:5px 8px;border:var(--border);border-radius:var(--radius-pill);background:var(--green);color:var(--on-accent)">Live</span>
+        <span style="font:var(--type-button);padding:9px 13px;border:var(--border);border-radius:var(--radius-pill);background:#f2eff8;color:var(--on-accent);box-shadow:var(--shadow-pill)">Open →</span>
+        <span style="font:var(--type-small);color:var(--ink-muted)">Headings use --display-ink (#f7f4fc), a step brighter than body.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
