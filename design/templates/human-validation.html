@@ -13,6 +13,10 @@
   - fields    which keys of each item to show, how (text | code | json | auto),
               and which ones sit side by side (same "group").
   - meta      keys shown as pills above the item.
+  - itemGuide optional per-item guide picked by one item key (e.g. the task):
+              { key: "task", entries: { "<value>": { label, summary, guidelines[] } } }.
+              Shown as a card above the fields, as the pill's tooltip, and as a
+              glossary at the end of the review guidelines.
   - verdicts  the buttons (label, keyboard key, tone) — e.g. approve / reject / unsure.
   - reasons   checkboxes, shown for the verdicts listed in reasonsFor.
   - source    where items come from and where reviews go:
@@ -80,6 +84,7 @@
 
 /* ============ base ============ */
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--canvas);color:var(--ink);font:400 16px/1.6 var(--font-body);-webkit-font-smoothing:antialiased}
 a{color:var(--link);text-underline-offset:2px}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -114,6 +119,10 @@ kbd{display:inline-block;min-width:20px;padding:2px 5px;border:1.5px solid var(-
 .guide[open] summary::before{content:"−"}
 .guide ul{margin:0;padding:0 18px 14px 40px}
 .guide li{font:400 15px/1.6 var(--font-body);color:var(--ink-body);margin:0 0 4px}
+.guide h3{margin:4px 0 6px;padding:0 18px 0 40px;font:700 13px/1.3 var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-subtle)}
+.guide dl{margin:0;padding:0 18px 14px 40px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+.guide dt{font:700 14px/1.6 var(--font-mono);color:var(--ink)}
+.guide dd{margin:0;font:400 15px/1.6 var(--font-body);color:var(--ink-body)}
 
 /* ============ toolbar ============ */
 .toolbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px var(--gutter);background:var(--canvas);border-bottom:var(--divider)}
@@ -152,6 +161,12 @@ kbd{display:inline-block;min-width:20px;padding:2px 5px;border:1.5px solid var(-
 .pill i{font-style:normal;font-weight:500;color:var(--ink-subtle)}
 .pill.warn{background:var(--amber)}
 .item-id{font:500 12px/1 var(--font-mono);color:var(--ink-subtle)}
+.task-guide{margin:0 0 16px;padding:12px 16px;border:var(--border-dashed);border-radius:var(--r-card);background:var(--violet-tint)}
+.task-guide .tg-head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font:700 15px/1.4 var(--font-body);color:var(--ink)}
+.task-guide .tg-head b{font:700 14px/1.4 var(--font-mono)}
+.task-guide .tg-sum{margin:4px 0 0;font:400 14px/1.55 var(--font-body);color:var(--ink-muted)}
+.task-guide ul{margin:8px 0 0;padding:0 0 0 20px}
+.task-guide li{font:400 14px/1.55 var(--font-body);color:var(--ink-body);margin:0 0 3px}
 
 .fields{display:flex;flex-direction:column;gap:16px}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -254,6 +269,7 @@ textarea{flex:1;width:100%;min-height:42px;max-height:140px;resize:none;padding:
   <details class="guide" id="guide">
     <summary>Review guidelines</summary>
     <ul id="guide-list"></ul>
+    <div id="guide-glossary"></div>
   </details>
 </section>
 
@@ -284,6 +300,7 @@ textarea{flex:1;width:100%;min-height:42px;max-height:140px;resize:none;padding:
     <div class="pills" id="pills"></div>
     <span class="item-id" id="item-id"></span>
   </div>
+  <aside class="task-guide" id="task-guide" hidden></aside>
   <div class="fields" id="fields"></div>
 </main>
 
@@ -404,7 +421,17 @@ var VALIDATION = {
   /* ---------- static header ---------- */
   document.title=C.title+' · Human validation · Seidelbots';
   $('h-title').textContent=C.title; $('h-dataset').textContent=C.dataset; $('h-desc').textContent=C.description||'';
-  if(C.guidelines&&C.guidelines.length){$('guide-list').innerHTML='';C.guidelines.forEach(function(g){var li=document.createElement('li');li.textContent=g;$('guide-list').appendChild(li)})}else $('guide').remove();
+  var IG=C.itemGuide&&C.itemGuide.entries?C.itemGuide:null;
+  function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+  if(C.guidelines&&C.guidelines.length){$('guide-list').innerHTML='';C.guidelines.forEach(function(g){$('guide-list').appendChild(el('li','',g))})}else $('guide-list').remove();
+  if(IG){var gl=$('guide-glossary'),dl=el('dl');gl.appendChild(el('h3','',C.itemGuide.title||'Reference'));
+    Object.keys(IG.entries).forEach(function(k){var g=IG.entries[k];dl.appendChild(el('dt','',k));dl.appendChild(el('dd','',(g.label?g.label+': ':'')+(g.summary||'')))});gl.appendChild(dl)}
+  if(!(C.guidelines&&C.guidelines.length)&&!IG)$('guide').remove();
+  function guideOf(x){return IG&&x?IG.entries[x[IG.key]]:null}
+  function renderGuide(x){var box=$('task-guide'),g=guideOf(x);box.innerHTML='';box.hidden=!g;if(!g)return;
+    var h=el('div','tg-head');h.appendChild(el('b','',x[IG.key]));if(g.label)h.appendChild(el('span','',g.label));box.appendChild(h);
+    if(g.summary)box.appendChild(el('p','tg-sum',g.summary));
+    if(g.guidelines&&g.guidelines.length){var ul=el('ul');g.guidelines.forEach(function(t){ul.appendChild(el('li','',t))});box.appendChild(ul)}}
   $('reviewer').value=lsGet('sb-reviewer','')||'';
   $('reviewer').oninput=function(){lsSet('sb-reviewer',this.value)};
 
@@ -456,7 +483,7 @@ var VALIDATION = {
     var r={id:id,verdict:verdict!==undefined?verdict:(prev.verdict||null),
       reasons:[].slice.call(document.querySelectorAll('#reasons input:checked')).map(function(c){return c.value}),
       flagged:prev.flagged||[],note:$('note').value,reviewer:$('reviewer').value||null,at:new Date().toISOString()};
-    C.meta.forEach(function(k){if(x[k]!==undefined)r[k]=x[k]});
+    C.meta.concat(C.copy||[]).forEach(function(k){if(x[k]!==undefined)r[k]=x[k]});
     notes[id]=r;persist(id,r);paintPanel();paintProgress();
   }
   function setFlags(f){var r=rec();if(!items[i])return;r.flagged=f;notes[idOf(items[i])]=r;save()}
@@ -542,13 +569,14 @@ var VALIDATION = {
     $('prev').disabled=pos<=0;$('next').disabled=pos<0||pos>=vis.length-1;
     $('pills').innerHTML='';$('item-id').textContent=x?idOf(x):'';
     if(x){
-      C.meta.forEach(function(k){if(x[k]===undefined||x[k]==='')return;var s=document.createElement('span');s.className='pill';s.innerHTML='<i></i>';s.querySelector('i').textContent=k;s.appendChild(document.createTextNode(String(x[k])));$('pills').appendChild(s)});
+      C.meta.forEach(function(k){if(x[k]===undefined||x[k]==='')return;var s=document.createElement('span');s.className='pill';s.innerHTML='<i></i>';s.querySelector('i').textContent=k;s.appendChild(document.createTextNode(String(x[k])));
+        var g=IG&&k===IG.key&&guideOf(x);if(g)s.title=(g.label?g.label+' — ':'')+(g.summary||'');$('pills').appendChild(s)});
       [].concat(C.warn&&x[C.warn]||[]).forEach(function(w){var s=document.createElement('span');s.className='pill warn';s.textContent='⚠ '+w;$('pills').appendChild(s)});
     }
     var r=rec();
     [].forEach.call(document.querySelectorAll('#reasons input'),function(c){c.checked=(r.reasons||[]).indexOf(c.value)>=0});
     $('note').value=r.note||'';grow();
-    renderFields();paintPanel();paintProgress();
+    renderGuide(x);renderFields();paintPanel();paintProgress();
     if(r.at){$('saved').className='saved ok';$('saved').textContent='Last saved '+new Date(r.at).toLocaleString([], {dateStyle:'short',timeStyle:'short'})}
   }
   function go(d){var vis=visible(),p=vis.indexOf(i);if(p<0){i=vis[0]||0}else{p=Math.min(vis.length-1,Math.max(0,p+d));i=vis[p]}render();window.scrollTo({top:0})}
