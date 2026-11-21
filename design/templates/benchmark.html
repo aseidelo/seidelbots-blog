@@ -2,7 +2,7 @@
 <!--
   Seidelbots · Benchmark run template  (v1.0)
   ------------------------------------------------------------------
-  One model, one task, a list of benchmarks. An evaluation script writes
+  One model run, every benchmark in one document (title: "<model> benchmark"). An evaluation script writes
   its results into the JSON block with id="run-data" (see
   render_benchmark.py) and saves the page to, e.g.,
     <owner>/<repo>/docs/benchmarks/<model>_<YYYYMMDD-HHMM>.html
@@ -44,28 +44,6 @@
   --on-accent:#1d1a24; --on-accent-surface:#fdfbf6; --display-ink:#1d1a24;
   --code-key:oklch(.5 .16 258); --link:oklch(.5 .16 258);
 }
-:root[data-theme="dark"]{
-  --ink:#f2eff8; --ink-body:#ded7ec; --ink-muted:#b8afcd; --ink-subtle:#9c92b5;
-  --canvas:#262035; --surface:#332b47; --rule:#4e4468; --rule-strong:#6a5e88;
-  --edge:#0e0c14; --shadow-ink:#0e0c14; --slab:#0e0c14; --edge-dashed:#7a6ea0;
-  --violet:oklch(.68 .15 258); --violet-tint:#2e2745;
-  --amber:oklch(.86 .1 62); --amber-tint:#3b3253;
-  --green:oklch(.82 .13 148); --green-tint:#26382f;
-  --on-accent:#15131b; --on-accent-surface:#fdfbf6; --display-ink:#f7f4fc;
-  --code-key:oklch(.78 .12 258); --link:oklch(.8 .11 258);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --ink:#f2eff8; --ink-body:#ded7ec; --ink-muted:#b8afcd; --ink-subtle:#9c92b5;
-    --canvas:#262035; --surface:#332b47; --rule:#4e4468; --rule-strong:#6a5e88;
-    --edge:#0e0c14; --shadow-ink:#0e0c14; --slab:#0e0c14; --edge-dashed:#7a6ea0;
-    --violet:oklch(.68 .15 258); --violet-tint:#2e2745;
-    --amber:oklch(.86 .1 62); --amber-tint:#3b3253;
-    --green:oklch(.82 .13 148); --green-tint:#26382f;
-    --on-accent:#15131b; --on-accent-surface:#fdfbf6; --display-ink:#f7f4fc;
-    --code-key:oklch(.78 .12 258); --link:oklch(.8 .11 258);
-  }
-}
 :root{
   --font-display:Syne,"Trebuchet MS",sans-serif;
   --font-body:"Public Sans",-apple-system,"Segoe UI",sans-serif;
@@ -79,12 +57,13 @@
 
 /* ============ base ============ */
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--canvas);color:var(--ink);font:400 16px/1.6 var(--font-body);-webkit-font-smoothing:antialiased}
 a{color:var(--link);text-underline-offset:2px}
 code{font:400 .86em/1 var(--font-mono);padding:2px 5px;border-radius:5px;background:var(--violet-tint);color:var(--ink)}
 button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--violet);outline-offset:2px}
-.frame{max-width:1020px;margin:0 auto;min-height:100vh;border-left:var(--divider);border-right:var(--divider);background:var(--canvas)}
+.frame{max-width:920px;margin:40px auto;border:var(--border);border-radius:4px;box-shadow:4px 4px 0 var(--shadow-ink);background:var(--surface)}
 .eyebrow{font:700 11px/1 var(--font-body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-subtle)}
 .tag{display:inline-block;font:700 10px/1 var(--font-body);letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border:var(--border);border-radius:var(--r-pill);color:var(--on-accent);background:var(--surface)}
 .tag.violet{background:var(--violet);color:#fff}
@@ -95,26 +74,24 @@ button{font:inherit;color:inherit}
 .btn-mono{font:600 12px/1 var(--font-mono)}
 .btn.ghost{box-shadow:none}
 
-/* ============ header ============ */
-.site{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px var(--gutter);border-bottom:var(--divider)}
-.wordmark{display:grid;place-items:center;height:38px;padding:0 14px;text-decoration:none;background:var(--surface);border:var(--border);border-radius:var(--r-logo);box-shadow:var(--shadow-card);font:800 18px/1 var(--font-display);letter-spacing:-.02em;color:var(--ink)}
-.theme{display:grid;place-items:center;width:30px;height:30px;border:var(--border);border-radius:var(--r-logo);background:var(--surface);color:var(--ink);font-size:13px;cursor:pointer;padding:0}
-.rule-top{height:6px;background:var(--green)}
+/* ============ document top line ============ */
+.doc-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px var(--gutter) 0}
+.doc-top .mono a{color:inherit;text-decoration:none}
 
 /* ============ title block ============ */
-.head{padding:30px var(--gutter) 26px;border-bottom:var(--divider)}
+.head{padding:18px var(--gutter) 26px;border-bottom:var(--divider)}
 .kicker{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.head h1{margin:0 0 12px;font:800 36px/1.08 var(--font-display);letter-spacing:-.025em;color:var(--display-ink);max-width:28ch;text-wrap:balance}
-.head .dek{margin:0 0 22px;max-width:64ch;font:400 17px/1.6 var(--font-body);color:var(--ink-muted)}
-.meta{display:grid;grid-template-columns:repeat(4,1fr);margin:0;border:var(--border);border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-card);overflow:hidden}
-.meta div{padding:12px 14px;border-right:var(--hairline);border-top:var(--hairline);min-width:0}
-.meta div:nth-child(4n){border-right:0}
-.meta div:nth-child(-n+4){border-top:0}
+.head h1{margin:0 0 20px;font:800 36px/1.08 var(--font-display);letter-spacing:-.025em;color:var(--display-ink);max-width:28ch;text-wrap:balance}
+.meta{display:grid;grid-auto-flow:column;grid-auto-columns:auto;margin:0;border:var(--border);border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-card);overflow:hidden}
+.meta div{padding:12px 14px;border-right:var(--hairline);min-width:0}
+.meta div:last-child{border-right:0}
+.meta dt{white-space:nowrap}
 .meta dt{margin:0 0 6px}
-.meta dd{margin:0;font:600 14px/1.35 var(--font-body);color:var(--ink);overflow-wrap:anywhere}
+.meta dd{margin:0;font:600 14px/1.35 var(--font-body);color:var(--ink);white-space:nowrap}
 .meta dd.m{font:500 13px/1.35 var(--font-mono)}
 .meta a{color:var(--ink)}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.run-note{margin:14px 0 0;font:400 14px/1.5 var(--font-body);color:var(--ink-muted)}
 
 /* ============ sections ============ */
 .content{padding:30px var(--gutter) 40px}
@@ -149,9 +126,12 @@ th[aria-sort="ascending"] button::after{content:"↑";color:var(--ink)}
 th[aria-sort="descending"] button::after{content:"↓";color:var(--ink)}
 td{padding:10px 12px;border-bottom:var(--hairline);vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}
-td .bname{font:700 15px/1.3 var(--font-body);color:var(--ink)}
+td .bname{font:700 15px/1.3 var(--font-body);color:var(--ink);white-space:nowrap}
+td.metric{white-space:nowrap}
 td .bsub{display:block;font:500 12px/1.3 var(--font-mono);color:var(--ink-subtle)}
 td.score{min-width:190px}
+table.compact td.score{min-width:0}
+table.compact th,table.compact td{padding-left:10px;padding-right:10px}
 .sc{display:flex;align-items:center;gap:10px;justify-content:flex-end}
 .sc .v{font:700 15px/1 var(--font-mono);color:var(--ink);font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
 .sc .ci{display:block;font:400 11px/1.2 var(--font-mono);color:var(--ink-subtle);text-align:right}
@@ -251,9 +231,10 @@ dialog .dlg-small{font-size:14px;color:var(--ink-muted);margin-top:-4px}
 /* ============ responsive ============ */
 @media (max-width:820px){
   :root{--gutter:16px}
-  .frame{border:0}
+  .frame{margin:0;border:0;border-radius:0;box-shadow:none}
   .head h1{font-size:28px}
-  .meta{grid-template-columns:1fr 1fr}
+  .meta{grid-auto-flow:row;grid-template-columns:1fr 1fr}
+  .meta dd{white-space:normal;overflow-wrap:anywhere}
   .meta div{border-right:var(--hairline)!important;border-top:var(--hairline)!important}
   .meta div:nth-child(2n){border-right:0!important}
   .meta div:nth-child(-n+2){border-top:0!important}
@@ -270,9 +251,10 @@ dialog .dlg-small{font-size:14px;color:var(--ink-muted);margin-top:-4px}
   td.score{min-width:0}
 }
 @media print{
-  :root,:root[data-theme]{--canvas:#fff;--surface:#fff;--ink:#000;--ink-body:#111;--ink-muted:#333;--ink-subtle:#555;--edge:#000;--shadow-ink:#000;--display-ink:#000}
-  .theme,.actions,.code button,dialog{display:none!important}
-  .frame{border:0;max-width:none}
+  :root{--canvas:#fff;--surface:#fff;--ink:#000;--ink-body:#111;--ink-muted:#333;--ink-subtle:#555;--edge:#000;--shadow-ink:#000;--display-ink:#000}
+  .actions,.code button,dialog{display:none!important}
+  body{background:#fff}
+  .frame{border:0;box-shadow:none;margin:0;max-width:none}
   .sec,.bcard,.chart,.table-wrap{break-inside:avoid}
 }
 </style>
@@ -280,20 +262,12 @@ dialog .dlg-small{font-size:14px;color:var(--ink-muted);margin-top:-4px}
 <body>
 <div class="frame">
 
-<header class="site">
-  <a class="wordmark" href="https://seidelbots.com" title="seidelbots.com">Seidelbots</a>
-  <button class="theme" id="theme" type="button" aria-label="Toggle light or dark theme">☾</button>
-</header>
-<div class="rule-top" aria-hidden="true"></div>
+<div class="doc-top">
+  <span class="mono"><a href="https://seidelbots.com">Seidelbots</a> · benchmark report · <span id="k-run"></span></span>
+</div>
 
 <section class="head">
-  <div class="kicker">
-    <span class="tag green">Benchmark run</span>
-    <span class="tag" id="k-task">Task</span>
-    <span class="mono" id="k-run"></span>
-  </div>
-  <h1 id="title">Model on task</h1>
-  <p class="dek" id="dek"></p>
+  <h1 id="title">Model benchmark</h1>
   <dl class="meta" id="meta"></dl>
   <div class="actions">
     <button class="btn" type="button" id="open-code" aria-haspopup="dialog" hidden>Code at <span class="btn-mono" data-text="short"></span></button>
@@ -424,13 +398,6 @@ git checkout <span data-text="commit"></span></pre></div>
   var D=JSON.parse($('run-data').textContent);
   var B=D.benchmarks||[], BL=D.baselines||[], BSH=['b0','b1','b2'];
 
-  /* ---------- theme ---------- */
-  var root=document.documentElement, tb=$('theme');
-  function th(){return root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}
-  function pt(){tb.textContent=th()==='dark'?'☀':'☾'}
-  try{var s=localStorage.getItem('sb-theme');if(s)root.setAttribute('data-theme',s)}catch(e){}
-  pt();tb.onclick=function(){var n=th()==='dark'?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('sb-theme',n)}catch(e){}pt()};
-
   /* ---------- helpers ---------- */
   function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
   function mx(b){return b.max||(b.unit==='%'?100:Math.max.apply(null,[b.score].concat(Object.values(b.baselines||{})))*1.1)}
@@ -446,13 +413,13 @@ git checkout <span data-text="commit"></span></pre></div>
 
   /* ---------- title block ---------- */
   var M=D.model||{}, R=D.run||{}, T=D.task||{};
-  var title=D.title||(M.name+' on '+T.name);
-  document.title=title+' · Benchmark · Seidelbots';
-  $('title').textContent=title;$('dek').textContent=T.description||'';
-  if(R.notes){var rn=el('p','dek');rn.style.cssText='margin-top:-12px;font-size:14px';rn.textContent='⚠ '+R.notes;$('dek').after(rn)}
-  $('k-task').textContent=T.name||'Task';$('k-run').textContent='run '+(R.id||'');
-  var meta=[['Model',M.name,1],['Checkpoint',M.checkpoint,1],['Base model',M.base,1],['Parameters',M.params]];
-  Object.keys(M).forEach(function(k){if(['name','checkpoint','base','params'].indexOf(k)<0)meta.push([k,M[k]])});
+  var title=D.title||(M.name+' benchmark');
+  document.title=title+' · Seidelbots';
+  $('title').textContent=title;
+  if(R.notes){var rn=el('p','run-note','⚠ '+R.notes);$('meta').after(rn)}
+  $('k-run').textContent='run '+(R.id||'');
+  var meta=[['Checkpoint',M.checkpoint,1],['Base model',M.base,1],['Parameters',M.params]];
+  Object.keys(M).forEach(function(k){if(['name','checkpoint','base','params'].indexOf(k)<0)meta.push([k.charAt(0).toUpperCase()+k.slice(1),M[k]])});
   meta.push(['Date',R.date?date(R.date):null],['Duration',R.duration_s?dur(R.duration_s):null],['Hardware',R.hardware],['Benchmarks',B.length+' · '+B.reduce(function(a,b){return a+(b.n||0)},0).toLocaleString('en-US')+' items']);
   meta.filter(function(m){return m[1]!=null&&m[1]!==''}).forEach(function(m){var d=el('div');d.appendChild(el('dt','eyebrow',m[0]));d.appendChild(el('dd',m[2]?'m':'',String(m[1])));$('meta').appendChild(d)});
 
@@ -475,12 +442,12 @@ git checkout <span data-text="commit"></span></pre></div>
   var pct=B.filter(function(b){return b.unit==='%'});
   var avg=pct.length?pct.reduce(function(a,b){return a+b.score},0)/pct.length:null;
   var stats=[[avg!=null?avg.toFixed(1)+'%':'—','mean score over '+pct.length+' benchmarks']];
-  BL.slice(0,2).forEach(function(bl){
+  BL.slice(0,3).forEach(function(bl){
     var both=pct.filter(function(b){return b.baselines&&b.baselines[bl.key]!=null});
     if(!both.length)return;
     var d=both.reduce(function(a,b){return a+(b.score-b.baselines[bl.key])},0)/both.length;
     var wins=both.filter(function(b){return hib(b)?b.score>b.baselines[bl.key]:b.score<b.baselines[bl.key]}).length;
-    stats.push([(d>=0?'+':'−')+Math.abs(d).toFixed(1),'points vs '+bl.label.toLowerCase()+' · better on '+wins+' of '+both.length]);
+    stats.push([(d>=0?'+':'−')+Math.abs(d).toFixed(1),'points vs '+bl.label+' · better on '+wins+' of '+both.length]);
   });
   if(stats.length<4)stats.push([B.reduce(function(a,b){return a+(b.n||0)},0).toLocaleString('en-US'),'items evaluated']);
   stats.slice(0,4).forEach(function(s){var d=el('div','stat');d.appendChild(el('b','',s[0]));d.appendChild(el('span','',s[1]));$('stats').appendChild(d)});
@@ -491,7 +458,7 @@ git checkout <span data-text="commit"></span></pre></div>
     .concat(BL.map(function(bl){return {k:'bl:'+bl.key,l:bl.label,num:1,bl:bl.key,get:function(b){var x=b.baselines&&b.baselines[bl.key];return x==null?-Infinity:b.score-x}}}));
   var sortK=null,sortDir=1;
   function drawTable(){
-    var t=$('table');t.innerHTML='';var thead=el('thead'),tr=el('tr');
+    var t=$('table');t.innerHTML='';if(BL.length>2)t.className='compact';var thead=el('thead'),tr=el('tr');
     cols.forEach(function(c){var h=el('th',c.num?'num':'');var b=el('button','',c.l);b.type='button';b.onclick=function(){if(sortK===c.k)sortDir=-sortDir;else{sortK=c.k;sortDir=c.num?-1:1}drawTable()};
       h.appendChild(b);h.setAttribute('aria-sort',sortK===c.k?(sortDir>0?'ascending':'descending'):'none');if(c.bl)h.title='Baseline score and delta';tr.appendChild(h)});
     thead.appendChild(tr);t.appendChild(thead);
@@ -501,8 +468,8 @@ git checkout <span data-text="commit"></span></pre></div>
       var r=el('tr');
       var c1=el('td');c1.appendChild(el('span','bname',b.name));if(b.version)c1.appendChild(el('span','bsub',b.version));r.appendChild(c1);
       r.appendChild(el('td','num mono',(b.n||0).toLocaleString('en-US')));
-      var c3=el('td');c3.appendChild(el('span','mono',b.metric+(hib(b)?' ↑':' ↓')));c3.title=hib(b)?'Higher is better':'Lower is better';r.appendChild(c3);
-      var c4=el('td','num score'),sc=el('div','sc'),mini=el('span','mini'),bar=el('i');bar.style.width=Math.min(100,b.score/mx(b)*100)+'%';mini.appendChild(bar);
+      var c3=el('td','metric');c3.appendChild(el('span','mono',b.metric+(hib(b)?' ↑':' ↓')));c3.title=hib(b)?'Higher is better':'Lower is better';r.appendChild(c3);
+      var c4=el('td','num score'),sc=el('div','sc'),mini=el('span','mini');if(BL.length>2)mini.hidden=true;mini=mini,bar=el('i');bar.style.width=Math.min(100,b.score/mx(b)*100)+'%';mini.appendChild(bar);
       var vv=el('span');vv.appendChild(el('span','v',fmt(b.score)+unit(b)));if(b.ci)vv.appendChild(el('span','ci',fmt(b.ci[0])+'–'+fmt(b.ci[1])));
       sc.appendChild(mini);sc.appendChild(vv);c4.appendChild(sc);r.appendChild(c4);
       BL.forEach(function(bl){var x=b.baselines&&b.baselines[bl.key],c=el('td','num base');if(x==null)c.textContent='—';else{c.appendChild(document.createTextNode(fmt(x)));c.appendChild(deltaEl(b.score-x,b))}r.appendChild(c)});
